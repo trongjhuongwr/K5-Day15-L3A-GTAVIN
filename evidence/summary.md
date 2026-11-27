@@ -34,3 +34,17 @@ Log `preclass/` ghi khoảng 1,08 phản hồi thảo luận trên 100 lượt h
 ## 5. Kết luận
 
 Giả thuyết ở [`evidence/hypothesis.md`](hypothesis.md): **đúng với dữ liệu hành vi `data/preclass/`** (`1.08%` phản hồi thấp hơn nhiều ngưỡng dự đoán `<50%`, `74.3%` `rubric_y_moi = 0` vượt ngưỡng `≥50%`). Điều vẫn chưa biết từ log số: nội dung câu chữ cụ thể khiến học viên hiểu lệch hoặc hỏi ngắn là gì — sẽ kiểm thêm trên kênh Discord công khai trước CP3.
+
+## 6. Lời nói demo của Quân
+
+**Trang 1 · Người dùng và vấn đề**
+
+> Người dùng của nhóm là học viên L3 tự học trước buổi học. Trong đợt log của BTC, có 151 phản hồi thảo luận trên 13.975 lượt bạn học AI hiện ra. Trong 1.223 câu nhắn đã chấm và có điểm ý mới, 909 câu đạt 0 điểm ở tiêu chí này. Nhóm chọn một phiên để học viên tự giải thích lại một khái niệm, nhận phản hồi đúng chỗ và làm một câu kiểm tra hiểu.
+
+Khi được hỏi về mẫu số, nói rõ `151/13.975` đếm lượt ghi log trên toàn bộ mẫu. Ví dụ `C00128` là một phản hồi 24 ký tự có `rubric_y_moi = 0`. Nguồn Discord của khóa chờ mẫu để kiểm nội dung học viên hỏi. [Số liệu và mã ví dụ](data-mining.md)
+
+**Trang 2 · Vì sao chọn A4**
+
+> Nhóm chọn A4 vì mục tiêu là xem học viên có diễn đạt lại và kiểm tra được mình hiểu đến đâu. Quy mô kịch bản là 436 học viên có hoạt động trong đợt log, nhân 14 lượt mở bài mỗi tháng và 10 phút học lại mỗi lượt theo giả định. Kết quả là 61.040 phút/tháng, tương đương 140 phút/người/tháng. Hai thừa số 14 và 10 đều là ước tính.
+
+Nếu được hỏi về các hướng đã cân nhắc, A1 tập trung vào tra cứu đoạn bài và có phạm vi người dùng hẹp hơn. Với A2, nhóm chưa có số đo thật cho nhu cầu hỏi lịch hoặc hạn nộp. Mức 140 phút dùng để mô tả quy mô vấn đề trong kịch bản. Phần thời gian tiết kiệm cần đo khi thử sản phẩm. [Bảng Impact trong spec](../spec.md)

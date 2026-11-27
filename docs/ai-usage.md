@@ -16,5 +16,7 @@ README của nhóm có mục "Dùng AI vào việc gì" (2–3 dòng, bắt bu�
 | Chấm cột `pass` bằng LLM (nếu có) | | | Kiểm tra thủ công __ câu thử, khớp __/__ | |
 | Slide, văn bản | Antigravity (Gemini) | Hỗ trợ biên tập tiếng Việt và đồng bộ `README.md`, `AGENTS.md`, `canvas.md`, `spec.md`, `DATA_CARD.md` theo code thật | Đội trưởng đọc soát từng mục, giữ nguyên số liệu gốc và phần §7 đã khóa ở CP2 | Nguyễn Trọng Hưởng |
 | Rà hồ sơ Eval CP1–CP2 của Đạt | Codex | Đối chiếu phân công và mốc nộp; làm rõ cấu trúc benchmark, cách chấm và giới hạn nguồn; chuẩn bị bảng chấm chéo 5 output trong `eval/README.md` | Chờ Lê Thành Đạt kiểm lại nội dung và phối hợp Quân kiểm nguồn; chấm chéo đang chờ output và hai người chấm | Lê Thành Đạt |
+| Kiểm nguồn benchmark CP3 | Codex | Đối chiếu `T01`, `T06`, `T07`, `T10` với bản ghi preclass và `T21`–`T25` với bài gốc, ghi chỗ dịch, lược và gắn mã đoạn | Bản kiểm chứng đã được gộp qua PR #5. Cách tính nguồn diễn đàn ngoài khóa theo R4 còn chờ xác nhận | Phạm Ngọc Trung Quân |
+| Lập persona và mô phỏng chi phí | Codex | Tính phân vị lượt mở bài, chuẩn bị persona và đối chiếu giá Haiku/Sonnet, lập độ nhạy cache, độ dài prompt và giờ duyệt | Đã chạy lại phép đếm trên dữ liệu BTC và kiểm kế hoạch lấy mẫu 10/50 phiên. Kết quả thực đo chờ API và Lượt 2 đã chấm | Phạm Ngọc Trung Quân |
 
 **Không dùng AI để:** tạo người được phỏng vấn, trích dẫn, câu trả lời khảo sát; sửa kết quả các lượt đã chạy (`eval/run-*.csv`, `cost/simulate-*.csv`, `traces/`).
