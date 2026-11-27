@@ -4,7 +4,7 @@
 
 *Lát cắt = phần nhỏ nhất làm xong được trong hackathon: một người dùng · một việc · một quyết định AI · một kết quả.*
 
-**Lát cắt của nhóm:** Một học viên L3 tự học pre-class · vừa xem xong một khái niệm và thấy bạn học AI nêu một hiểu nhầm phổ biến · bộ điều phối quyết định chọn bạn học AI hỏi vặn lại, trợ giảng can thiệp kèm mã đoạn, hay chốt bằng câu kiểm tra dựa trên câu giải thích của học viên · học viên tự diễn đạt đúng bản chất và vượt qua câu kiểm tra cuối đoạn.
+**Lát cắt của nhóm:** Một học viên L3 · tự học xong một đoạn bài trên pre-class · AI chọn đưa bạn học hỏi sai để học viên giảng lại, hoặc gọi trợ giảng sửa lỗi kèm mã đoạn · học viên tự giải thích đúng và qua được câu kiểm tra ngay sau đó.
 
 ---
 

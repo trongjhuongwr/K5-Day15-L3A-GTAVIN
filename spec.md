@@ -17,7 +17,7 @@ Data BTC cấp đã dùng (nếu có — không commit nguyên file): `data/prec
 - Người dùng chính (một vai cụ thể): Học viên lớp L3 đi làm ban ngày, tối tự học video và làm mini-lab trên trang pre-class trước buổi học.
 - Việc họ cố làm xong (`động từ + đối tượng + bối cảnh`, không có chữ AI): Nắm chắc khái niệm cốt lõi và tự giải thích lại được kiến thức sau khi xem video pre-class để làm đúng bài thực hành và bài kiểm tra trước khi lên lớp.
 - Hôm nay họ giải bằng gì, hỏng ở đâu, vì sao chưa bỏ: Xem lại/tua video, đọc slide, hoặc hỏi nhanh công cụ chat/trợ giảng. Hỏng ở chỗ việc xem và hỏi đáp thụ động không ép người học tự diễn đạt lại bằng lời của mình nên dễ "tưởng đã hiểu", đến lúc vào kiểm tra hoặc làm lab mới vướng. Chưa bỏ vì đây là quy trình bắt buộc trên LMS/pre-class để mở tiến độ học.
-- Pain (KHÔNG chữ AI): Học viên lớp L3 tự học pre-class thường xem bài thụ động, ít có cơ hội chủ động diễn đạt lại và tự sửa chỗ hiểu lệch ngay sau từng khái niệm, dẫn đến vẫn làm sai bài kiểm tra cuối ngày và bỏ qua bước thực hành.
+- Pain (KHÔNG chữ AI): Học viên L3 đi làm ban ngày, tối tự học trên pre-class thường chỉ xem video một chiều và ít tự diễn đạt lại kiến thức, nên không nhận ra chỗ hiểu sai cho đến khi làm bài kiểm tra cuối ngày.
 - Bằng chứng — số chính + kết luận (chi tiết: `evidence/summary.md`): *(Đang đào từ `data/preclass/` và kênh công khai của khoá — hoàn tất script và tổng hợp trước CP2/CP3)*
 
 ## §2. Impact & quyết định chọn *(guide 1.3)*
@@ -38,7 +38,7 @@ Data BTC cấp đã dùng (nếu có — không commit nguyên file): `data/prec
 - [sản phẩm / tính năng gần giống]: một điều đáng học · một điều đáng né · mình khác gì *(hoàn thành ở bước 2.1 trước CP2)*
 
 ## §4. Thiết kế *(guide 2.2, 3.2)*
-- **Lát cắt MỘT CÂU**: Một học viên L3 tự học pre-class · vừa xem xong một khái niệm và thấy bạn học AI nêu một hiểu nhầm phổ biến · bộ điều phối quyết định chọn bạn học AI hỏi vặn lại, trợ giảng can thiệp kèm mã đoạn, hay chốt bằng câu kiểm tra dựa trên câu giải thích của học viên · học viên tự diễn đạt đúng bản chất và vượt qua câu kiểm tra cuối đoạn.
+- **Lát cắt MỘT CÂU**: Một học viên L3 · tự học xong một đoạn bài trên pre-class · AI chọn đưa bạn học hỏi sai để học viên giảng lại, hoặc gọi trợ giảng sửa lỗi kèm mã đoạn · học viên tự giải thích đúng và qua được câu kiểm tra ngay sau đó.
 - Không làm (≥3 điều):
   1. Không tích hợp trực tiếp vào hệ thống `preclass-online.com` thật.
   2. Không sinh video/audio bài giảng mới.
