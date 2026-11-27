@@ -1,0 +1,82 @@
+[
+  {
+    "code": "D01-01",
+    "day": "Day01",
+    "topic": "Chatbot là ứng dụng bọc quanh model",
+    "keywords": ["chatbot", "model", "system prompt", "bọc quanh", "llm", "ứng dụng"],
+    "content": "Một model ngôn ngữ (LLM) chỉ nhận chuỗi đầu vào và sinh ra chuỗi tiếp theo. Ứng dụng chatbot phải tự quản lý system prompt, lịch sử hội thoại, gọi công cụ và giới hạn an toàn xung quanh model đó.",
+    "misconception": "Model tự động nhớ mọi cuộc trò chuyện cũ và tự biết quy tắc của công ty mà không cần lập trình phần ứng dụng bọc ngoài.",
+    "check_question": "Vì sao không thể chỉ dùng nguyên model trần mà cần phần ứng dụng bọc xung quanh?",
+    "key_points": ["system prompt", "lịch sử", "công cụ", "giới hạn"]
+  },
+  {
+    "code": "D01-02",
+    "day": "Day01",
+    "topic": "Temperature và hiện tượng bịa đặt",
+    "keywords": ["temperature", "bịa", "hallucination", "sáng tạo", "ngẫu nhiên", "chính xác"],
+    "content": "Temperature điều chỉnh độ ngẫu nhiên khi chọn token tiếp theo: giá trị thấp (gần 0) giúp câu trả lời ổn định hơn, giá trị cao tăng tính đa dạng. Tuy nhiên temperature=0 KHÔNG xóa bỏ được bịa đặt nếu model thiếu dữ liệu căn cứ.",
+    "misconception": "Đặt temperature=0 là model sẽ hết bịa đặt 100% và luôn nói đúng sự thật.",
+    "check_question": "Đặt temperature=0 có đảm bảo model không bịa thông tin nữa không? Vì sao?",
+    "key_points": ["không", "ngẫu nhiên", "căn cứ", "dữ liệu"]
+  },
+  {
+    "code": "D03-01",
+    "day": "Day03",
+    "topic": "Hợp đồng công cụ (Tool Contract) tách khỏi System Prompt",
+    "keywords": ["tool", "công cụ", "hợp đồng công cụ", "tool contract", "input", "output", "system prompt", "tác động"],
+    "content": "Mỗi công cụ phải có hợp đồng rõ ràng: tên, input, output và mức độ tác động ra ngoài (chỉ đọc hay thay đổi dữ liệu). Tách phần mô tả hợp đồng công cụ khỏi lời nhắc văn phong giúp model gọi đúng hàm và dễ kiểm soát lỗi.",
+    "misconception": "Chỉ cần viết mọi thứ chung vào system prompt bằng văn xuôi là model tự biết gọi công cụ an toàn.",
+    "check_question": "Một hợp đồng công cụ (tool contract) đầy đủ cần nêu rõ những thành phần nào?",
+    "key_points": ["input", "output", "tác động", "tên"]
+  },
+  {
+    "code": "D04-01",
+    "day": "Day04",
+    "topic": "Vòng lặp Agent và giới hạn số bước (MAX_STEPS)",
+    "keywords": ["vòng lặp", "loop", "max_steps", "giới hạn", "dừng", "agent", "token"],
+    "content": "Khi AI tự chọn bước tiếp theo trong vòng lặp, bắt buộc phải đặt giới hạn MAX_STEPS và điều kiện dừng rõ ràng để tránh lặp vô tận, đội chi phí token và treo phiên làm việc.",
+    "misconception": "Cứ để agent tự lặp đến khi nào thấy hài lòng thì tự dừng, không cần đặt giới hạn bước.",
+    "check_question": "Nếu không đặt MAX_STEPS cho vòng lặp agent thì hai rủi ro trực tiếp nhất là gì?",
+    "key_points": ["vô tận", "chi phí", "token", "treo"]
+  },
+  {
+    "code": "D05-01",
+    "day": "Day05",
+    "topic": "Chính sách tự chủ (Autonomy Policy) theo hậu quả sai",
+    "keywords": ["tự chủ", "autonomy", "duyệt", "đảo ngược", "rủi ro", "người duyệt"],
+    "content": "Mức tự chủ của AI phụ thuộc vào câu hỏi: sai thì ai chịu và có đảo ngược được không. Việc chỉ đọc hoặc dễ sửa có thể để AI làm; việc tác động ra ngoài khó đảo ngược (gửi tin, trừ tiền, chốt điểm) phải qua người duyệt.",
+    "misconception": "AI càng thông minh thì nên cho tự thực hiện mọi hành động luôn để đỡ tốn công người duyệt.",
+    "check_question": "Tiêu chí cốt lõi để quyết định một việc do AI tự làm hay phải chờ người duyệt là gì?",
+    "key_points": ["hậu quả", "đảo ngược", "người duyệt", "sai"]
+  },
+  {
+    "code": "D06-01",
+    "day": "Day06",
+    "topic": "Data giả lập có seed và Data Card",
+    "keywords": ["synthetic", "giả lập", "seed", "data card", "bằng chứng", "pain"],
+    "content": "Dữ liệu giả lập có seed dùng để kiểm thử luồng chạy khi thiếu dữ liệu thật hoặc cần bảo mật, và phải ghi rõ nguồn gốc, cách sinh trong DATA_CARD. Dữ liệu tự dựng KHÔNG được tính là bằng chứng pain của người dùng.",
+    "misconception": "Có thể dùng dữ liệu giả lập tự sinh để chứng minh người dùng ngoài đời đang gặp vấn đề.",
+    "check_question": "Dữ liệu giả lập có seed dùng vào việc gì và KHÔNG được dùng thay cho việc gì?",
+    "key_points": ["kiểm thử", "không", "bằng chứng", "data card"]
+  },
+  {
+    "code": "D08-01",
+    "day": "Day08",
+    "topic": "Chọn hình dạng kiến trúc đơn giản nhất",
+    "keywords": ["workflow", "agent", "multi-agent", "hình dạng", "đơn giản", "vai"],
+    "content": "Luôn chọn hình dạng đơn giản nhất giải quyết được bài toán: workflow cố định khi các bước rõ ràng; một agent khi đường đi thay đổi theo đầu vào; nhiều agent chỉ khi các vai thật sự có mục tiêu, góc nhìn và công cụ khác nhau.",
+    "misconception": "Hệ thống dùng càng nhiều agent thì điểm kỹ thuật và chất lượng sản phẩm càng cao.",
+    "check_question": "Khi nào mới nên chọn kiến trúc nhiều agent thay vì workflow cố định hoặc một agent?",
+    "key_points": ["vai", "khác nhau", "đơn giản", "công cụ"]
+  },
+  {
+    "code": "D11-01",
+    "day": "Day11",
+    "topic": "Chống Prompt Injection — tin nhắn là dữ liệu, không phải lệnh",
+    "keywords": ["injection", "tấn công", "bỏ qua hướng dẫn", "dữ liệu", "lệnh", "an toàn"],
+    "content": "Mọi nội dung do người dùng nhập vào hoặc lấy từ nguồn ngoài đều là dữ liệu, KHÔNG phải chỉ dẫn hệ thống. Phải có lớp kiểm tra chặn yêu cầu bỏ qua hướng dẫn, giả danh quản trị viên hoặc đòi xuất toàn bộ đáp án.",
+    "misconception": "Chỉ cần dặn nhẹ trong prompt là model sẽ tự miễn nhiễm trước mọi câu lừa đảo của người dùng.",
+    "check_question": "Nguyên tắc cốt lõi khi xử lý đầu vào của người dùng để chống prompt injection là gì?",
+    "key_points": ["dữ liệu", "không phải lệnh", "chặn", "giả danh"]
+  }
+]
