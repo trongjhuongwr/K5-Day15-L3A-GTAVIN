@@ -78,5 +78,38 @@
     "misconception": "Chỉ cần dặn nhẹ trong prompt là model sẽ tự miễn nhiễm trước mọi câu lừa đảo của người dùng.",
     "check_question": "Nguyên tắc cốt lõi khi xử lý đầu vào của người dùng để chống prompt injection là gì?",
     "key_points": ["dữ liệu", "không phải lệnh", "chặn", "giả danh"]
+  },
+  {
+    "code": "D02-01",
+    "day": "Day02",
+    "topic": "JTBD, Pain thật và tính Impact trước khi làm AI",
+    "keywords": ["jtbd", "jobs to be done", "pain", "impact", "tác động", "tần suất"],
+    "content": "Trước khi chọn giải pháp AI, phải xác định rõ việc người dùng cố làm xong (JTBD: động từ + đối tượng + bối cảnh) và nỗi đau thật có bằng chứng. Chỉ chọn hướng đáng làm khi tính được Impact/tháng = số người gặp × số lần/tháng × chi phí mất mỗi lần.",
+    "misconception": "Thấy ý tưởng AI hay là làm ngay, không cần chứng minh người dùng có đau thật hay tính Impact.",
+    "check_question": "Công thức tính Impact/tháng và nguyên tắc viết JTBD gồm những yếu tố nào?",
+    "key_points": ["người dùng", "bằng chứng", "impact", "tần suất"],
+    "misconception_cues": ["ý tưởng hay là làm ngay", "không cần tính impact", "không cần bằng chứng pain"]
+  },
+  {
+    "code": "D07-01",
+    "day": "Day07",
+    "topic": "Grounding và nói Không biết khi thiếu căn cứ",
+    "keywords": ["grounding", "căn cứ", "thiếu căn cứ", "truy xuất", "retrieval", "trả rỗng", "không biết", "ngoài tài liệu"],
+    "content": "AI chỉ được trả lời dựa trên đoạn tài liệu truy xuất được (grounding) và phải phân biệt giữa trích nguyên văn với tự suy diễn. Khi công cụ tìm kiếm trả rỗng hoặc câu hỏi nằm ngoài kho tài liệu, hệ thống bắt buộc nói rõ không có trong tài liệu thay vì tự bịa.",
+    "misconception": "AI thông minh thì nên tự đoán câu trả lời cho mượt dù tài liệu không nhắc tới.",
+    "check_question": "Khi công cụ tra cứu trả về danh sách rỗng, hệ thống có grounding tốt phải xử lý thế nào?",
+    "key_points": ["căn cứ", "trả rỗng", "ngoài tài liệu", "không bịa"],
+    "misconception_cues": ["cứ tự đoán cho mượt", "không có trong tài liệu vẫn trả lời"]
+  },
+  {
+    "code": "D09-01",
+    "day": "Day09",
+    "topic": "Đánh giá bằng Benchmark và phân biệt lỗi tool với lỗi model",
+    "keywords": ["eval", "benchmark", "pass_criterion", "chuẩn đạt", "lỗi tool", "lỗi model"],
+    "content": "Để biết bản chạy thử tốt lên hay tệ đi, phải chốt chuẩn đạt và bộ câu thử (benchmark) gồm ca thường, ca khó và ca từ chối trước khi tối ưu. Khi có câu trượt, cần xem trace để tách bạch lỗi do code/tool (tra cứu sai) với lỗi do model (trả lời lệch hướng).",
+    "misconception": "Chạy thử vài câu thấy mượt bằng mắt thường là đủ, không cần chốt chuẩn đạt hay phân biệt lỗi tool và model.",
+    "check_question": "Vì sao khi đánh giá bản chạy thử cần tách riêng lỗi của tool với lỗi của model trên bộ benchmark?",
+    "key_points": ["benchmark", "chuẩn đạt", "lỗi tool", "lỗi model"],
+    "misconception_cues": ["chỉ cần nhìn bằng mắt", "không cần benchmark", "không cần chuẩn đạt"]
   }
 ]
