@@ -46,6 +46,14 @@ def _norm(text: str) -> str:
     return re.sub(r"\s+", " ", s)
 
 
+def _contains_term(norm_text: str, norm_term: str) -> bool:
+    """Kiểm tra cụm từ khớp theo ranh giới từ để tránh khớp dính bên trong từ khác."""
+    if not norm_term:
+        return False
+    pattern = r"(?<!\w)" + re.escape(norm_term) + r"(?!\w)"
+    return re.search(pattern, norm_text) is not None
+
+
 def _load_lessons() -> list:
     if not os.path.exists(LESSONS_PATH):
         return []
@@ -76,7 +84,8 @@ _STOPWORDS = {
     "trong", "này", "cách", "viết", "bằng", "trên", "cho", "của", "không", "như",
     "thế", "nào", "khi", "làm", "một", "các", "những", "được", "với", "từ", "về",
     "theo", "mình", "bạn", "hỏi", "thì", "hay", "hoặc", "nhưng", "vẫn", "đang",
-    "cần", "phải", "nên", "thực", "hiện", "của", "khoá", "khóa", "bài", "học",
+    "cần", "phải", "nên", "thực", "hiện", "khoá", "khóa", "bài", "học",
+    "gì", "sao", "vậy", "để", "có", "là", "và", "đến", "vào", "lúc", "trước", "sau",
 }
 
 
@@ -91,18 +100,20 @@ def search_lesson(query: str) -> list:
         for item in lessons:
             if item.get("code", "").upper() == code:
                 return [dict(item, score=100)]
+        # Học viên nêu rõ mã đoạn dạng DXX-XX nhưng không tồn tại trong kho -> trả rỗng sạch
+        return []
 
     scored = []
     for item in lessons:
         kw_hits = 0
         for kw in item.get("keywords", []):
-            if _norm(kw) in q:
+            if _contains_term(q, _norm(kw)):
                 kw_hits += 1
         topic_words = [
             w for w in re.findall(r"\w+", _norm(item.get("topic", "")))
             if len(w) >= 3 and w not in _STOPWORDS
         ]
-        t_hits = sum(1 for w in topic_words if w in q)
+        t_hits = sum(1 for w in topic_words if _contains_term(q, w))
         if kw_hits >= 1 or t_hits >= 3:
             scored.append((kw_hits * 3 + t_hits, item))
     scored.sort(key=lambda x: -x[0])
@@ -133,15 +144,18 @@ def assess_learner_input(code: str, user_text: str) -> dict:
     misconception_cues = {
         "D01-01": ("không cần lập trình thêm", "chỉ cần gọi thẳng api"),
         "D01-02": ("hết bịa đặt 100%", "nói đúng hoàn toàn"),
+        "D02-01": ("ý tưởng hay là làm ngay", "không cần tính impact"),
         "D03-01": ("gộp hết vào system prompt", "không cần tách tool"),
         "D04-01": ("không cần đặt giới hạn bước", "tự lặp đến khi xong"),
         "D05-01": ("tự thực hiện mọi hành động", "không cần người duyệt"),
         "D06-01": ("giả lập tự sinh làm bằng chứng", "hợp lệ mà"),
+        "D07-01": ("cứ tự đoán cho mượt", "không có trong tài liệu vẫn trả lời"),
         "D08-01": ("càng nhiều agent càng tốt",),
+        "D09-01": ("chỉ cần nhìn bằng mắt", "không cần benchmark"),
         "D11-01": ("chỉ cần dặn nhẹ", "tự miễn nhiễm"),
     }
-    cues = misconception_cues.get(passage["code"], ())
-    if any(c in q for c in cues) or ("bạn học ai bảo" in q and "đúng" in q):
+    cues = tuple(misconception_cues.get(passage["code"], ())) + tuple(passage.get("misconception_cues", ()))
+    if any(_norm(c) in q for c in cues) or ("bạn học ai bảo" in q and "đúng" in q):
         return {"status": "misconception_match", "code": passage["code"], "reason": "học viên đang nêu hoặc đồng tình với hiểu nhầm phổ biến"}
 
     return {"status": "substantive", "code": passage["code"], "reason": "câu giải thích có nội dung cụ thể"}
@@ -156,8 +170,8 @@ def check_answer(code: str, user_text: str) -> dict:
         return {"passed": False, "matched": [], "missing": [], "ratio": 0.0}
     q = _norm(user_text)
     kps = passage.get("key_points", [])
-    matched = [kp for kp in kps if _norm(kp) in q]
-    missing = [kp for kp in kps if _norm(kp) not in q]
+    matched = [kp for kp in kps if _contains_term(q, _norm(kp))]
+    missing = [kp for kp in kps if not _contains_term(q, _norm(kp))]
     ratio = len(matched) / len(kps) if kps else 0.0
     return {"passed": ratio >= 0.5, "matched": matched, "missing": missing, "ratio": round(ratio, 2)}
 
