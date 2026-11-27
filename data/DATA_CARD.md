@@ -20,9 +20,9 @@
 | | |
 |---|---|
 | Dùng để làm gì | Nguồn căn cứ cho công cụ `get_passage`, `search_lesson`, `check_answer` trong `codebase/tools.py` |
-| Từ đâu | Nhóm tự biên soạn bản tóm tắt khái niệm cốt lõi dựa theo đề cương công khai của khoá AI20K Level 3 (Day01, Day03, Day04, Day05, Day06, Day08, Day11) — không sao chép nguyên slide hay transcript |
-| Xử lý những bước gì | Chuẩn hoá mỗi khái niệm thành 1 mục JSON gồm: `code`, `day`, `topic`, `keywords`, `content`, `misconception`, `check_question`, `key_points` |
-| Số dòng / số đoạn | `8` đoạn kiến thức cốt lõi (`D01-01` → `D11-01`) |
-| Phiên bản / ngày lấy | Tự biên soạn ngày 27/11/2026 |
-| Nhãn | `synthetic` (tự biên soạn có cấu trúc chuẩn, kiểm tay 8/8 đoạn) |
-| Giới hạn | Chỉ phủ 8 chủ đề tiêu biểu trong phạm vi lát cắt demo, chưa phủ toàn bộ 15 ngày học |
+| Từ đâu | Nhóm tự biên soạn bản tóm tắt khái niệm cốt lõi dựa theo đề cương công khai của khoá AI20K Level 3 (Day01 → Day09, Day11) — không sao chép nguyên slide hay transcript |
+| Xử lý những bước gì | Chuẩn hoá mỗi khái niệm thành 1 mục JSON gồm: `code`, `day`, `topic`, `keywords`, `content`, `misconception`, `check_question`, `key_points` (và `misconception_cues` ở các đoạn bổ sung) |
+| Số dòng / số đoạn | `11` đoạn kiến thức cốt lõi (`D01-01` → `D11-01`, gồm `D01-01`, `D01-02`, `D02-01`, `D03-01`, `D04-01`, `D05-01`, `D06-01`, `D07-01`, `D08-01`, `D09-01`, `D11-01`) |
+| Phiên bản / ngày lấy | Tự biên soạn ngày 27/11/2026 (bản đầu 8 đoạn, Tân bổ sung 3 đoạn ở PR #1) |
+| Nhãn | `synthetic` (tự biên soạn có cấu trúc chuẩn, kiểm tay 11/11 đoạn) |
+| Giới hạn | Chỉ phủ 11 khái niệm tiêu biểu trong phạm vi lát cắt demo, chưa phủ toàn bộ 15 ngày học |

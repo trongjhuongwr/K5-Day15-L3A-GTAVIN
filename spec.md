@@ -48,49 +48,50 @@ Data BTC cấp đã dùng (nếu có — không commit nguyên file): `data/prec
 
 ```mermaid
 flowchart TD
-    IN["Học viên nhập lời giải thích / câu trả lời<br/>(kèm mã đoạn đang học)"] --> GUARD["check_input_guard (code)<br/>Chặn prompt injection / xin đáp án / rỗng"]
-    GUARD -->|Ngoài phạm vi / Tấn công| REFUSE["Từ chối cứng + nhắc quay lại khái niệm [G10]"]
-    GUARD -->|Quá ngắn <= 15 ký tự hoặc mơ hồ| CLARIFY["G10: Hỏi lại đúng 1 câu làm rõ<br/>(không đoán bừa, không cho qua lượt)"]
-    GUARD -->|Đủ nội dung| STATE["learner_state + get_passage / search_lesson<br/>Đọc đoạn bài học & nhận diện hiểu nhầm"]
-    STATE -->|Ngoài tài liệu bài học| NO_DATA["Trả lời: Không có trong tài liệu bài học [G10]"]
-    STATE --> DIR["Agent 1: Bộ điều phối (director)<br/>next_speaker(state) -> chọn vai nói tiếp"]
-    DIR -->|Học viên hiểu đúng sơ bộ, cần phản biện sâu| CM["Agent 2: Bạn học hiểu sai (classmate_confused)<br/>KHÔNG biết đáp án · đặt câu hỏi hiểu nhầm để HV giảng lại"]
-    DIR -->|HV đồng ý cái sai / giải thích lệch / hỏi lại bài| TA["Agent 3: Trợ giảng (teaching_assistant)<br/>Bắt buộc đối chiếu [mã đoạn] & sửa đúng hiểu nhầm [G11]"]
-    DIR -->|HV đã tự giải thích đúng ý cốt lõi| QUIZ["Cổng kiểm tra hiểu (check_answer)<br/>Chấm câu kiểm tra cuối đoạn -> xác nhận đạt/chưa"]
-    CM --> OUT["Trả kết quả cho học viên<br/>(ghi rõ vai đang nói + gợi ý bước tiếp [G1/G8])"]
-    TA --> OUT
-    QUIZ --> OUT
+    IN["Học viên nhập lời giải thích / câu hỏi<br/>(kèm mã đoạn nếu có)"] --> RET["get_passage / search_lesson<br/>Tra cứu đoạn khớp trong data/lessons.json"]
+    RET --> GUARD["assess_learner_input (Input Guard)<br/>Phân loại tấn công / ngoài thẩm quyền / ngắn / hiểu nhầm"]
+    GUARD -->|attack / out_of_scope_auth| REFUSE["Từ chối dứt khoát + nhắc quay lại bài [G10]"]
+    GUARD -->|short_or_low_effort <= 15 ký tự| CLARIFY["G10: Hỏi lại đúng 1 câu làm rõ<br/>(không đoán bừa, không cho qua lượt)"]
+    GUARD -->|no_data| NO_DATA["Báo không có trong tài liệu + gợi ý mã đoạn hiện có [G10]"]
+    GUARD -->|spoonfeed / misconception_match| TA["Agent 3: Trợ giảng AI (teaching_assistant)<br/>Nhận tài liệu chuẩn · sửa hiểu nhầm kèm mã đoạn [G11]"]
+    GUARD -->|substantive| CHECK["check_answer + Agent 1: Bộ điều phối (director)<br/>next_speaker(assessment, check_res)"]
+    CHECK -->|Thiếu ý cốt lõi| ALLOW["Handoff Allowlist (Day 08)<br/>Chỉ cấp topic, misconception, missing · chặn đáp án"]
+    ALLOW --> CM["Agent 2: Bạn học hiểu sai (classmate_confused)<br/>Đặt 1-2 câu hỏi vặn để học viên tự giảng lại"]
+    CHECK -->|Đủ ý cốt lõi| TA
+    CM --> OUT_G["_output_guardrail (Day 11)<br/>Kiểm mã đoạn hợp lệ & chặn lộ đáp án chuẩn"]
+    TA --> OUT_G
+    OUT_G --> OUT["Trả kết quả kèm nhãn vai rõ ràng [G1/G2/G8]"]
 ```
 
 - **Hình dạng:** [ ] workflow cố định · [ ] một agent · [x] **nhiều agent** — Nhóm chọn **3 vai tách biệt** vì:
-  1. `director` (Bộ điều phối) chỉ đọc trạng thái và định tuyến (`classmate_confused` vs `teaching_assistant` vs `quiz`), không tự giảng bài.
-  2. `classmate_confused` (Bạn học AI hay hiểu sai) bị tách riêng prompt và **không được cấp đáp án chuẩn** để giữ vai trò "người cần được giảng lại" (*Protégé Effect*).
-  3. `teaching_assistant` (Trợ giảng AI) là vai **duy nhất** được gọi công cụ tra cứu bài học (`search_lesson` / `get_passage`) và có trách nhiệm sửa đúng mọi hiểu nhầm kèm `[mã đoạn]` trước khi kết thúc phiên.
-  - **Vì sao không dùng 1 agent hay workflow cố định:** Nếu gộp thành 1 agent, cùng một ngữ cảnh vừa đóng vai "ngây thơ hiểu sai" vừa giữ đáp án chuẩn rất dễ tự mâu thuẫn hoặc vô tình lộ đáp án; còn workflow cố định không rẽ nhánh linh hoạt được giữa lúc học viên giảng đúng (gọi câu kiểm tra), giảng thiếu (bạn học hỏi vặn), giảng sai (trợ giảng đính chính), hay trả lời đối phó 1 chữ.
-- **AI dựa vào đâu** — mỗi công cụ (khớp `codebase/tools.py`):
+  1. `director` (Bộ điều phối) đánh giá trạng thái người học qua `assess_learner_input` + `check_answer` và định tuyến bằng `next_speaker`, không tự giảng bài.
+  2. `classmate_confused` (Bạn học AI hay hiểu sai) dùng prompt tách riêng và **chỉ nhận Handoff Allowlist** (`{code, topic, misconception, missing}`), **tuyệt đối không được cấp `content` và `key_points` chuẩn** để giữ đúng vai "người cần được giảng lại" (*Protégé Effect*).
+  3. `teaching_assistant` (Trợ giảng AI) là vai duy nhất được cấp đầy đủ nội dung chuẩn (`content`, `key_points`, `check_question`) từ `data/lessons.json`, có trách nhiệm đính chính mọi hiểu nhầm kèm `[mã đoạn]` và chốt câu kiểm tra hiểu.
+  - **Vì sao không dùng 1 agent hay workflow cố định:** Nếu gộp thành 1 agent, cùng một ngữ cảnh vừa đóng vai "ngây thơ hiểu sai" vừa giữ đáp án chuẩn rất dễ tự mâu thuẫn hoặc vô tình lộ đáp án; còn workflow cố định không rẽ nhánh linh hoạt được giữa lúc học viên giảng đúng (vào câu kiểm tra), giảng thiếu (bạn học hỏi vặn), giảng sai (trợ giảng đính chính), hay trả lời đối phó 1 chữ.
+- **AI dựa vào đâu** — 5 công cụ `@tool` (khớp `codebase/tools.py`):
 
   | Công cụ | Input | Output | Tác động ra ngoài? |
   |---|---|---|---|
-  | `get_passage(code)` | mã đoạn (vd `D03-01`) | nội dung đoạn, hiểu nhầm phổ biến, câu hỏi kiểm tra, ý cốt lõi | Không (chỉ đọc `data/lessons.json`) |
-  | `search_lesson(query)` | câu hỏi / từ khóa của học viên | danh sách ≤2 đoạn phù hợp nhất kèm điểm khớp | Không (chỉ đọc `data/lessons.json`) |
-  | `assess_learner_input(code, user_text)` | mã đoạn + câu chữ học viên gõ | trạng thái: `empty_or_short`, `attack`, `off_topic`, `misconception_match`, `substantive` | Không (chỉ phân tích cục bộ) |
-  | `check_answer(code, user_text)` | mã đoạn + câu trả lời kiểm tra hiểu | tỉ lệ ý cốt lõi đạt được, ý còn thiếu, kết luận đạt/chưa đạt | Không (chỉ chấm thử trong phiên, không ghi điểm thật) |
-  | `next_speaker(assessment, mode)` | kết quả phân tích + chế độ học | quyết định vai tiếp theo (`clarify` / `classmate` / `ta` / `quiz` / `refuse`) | Không (chỉ định tuyến trong phiên) |
+  | `get_passage(code)` | mã đoạn (vd `D03-01`) | dict nội dung đoạn, hiểu nhầm phổ biến, câu hỏi kiểm tra, ý cốt lõi | Không (chỉ đọc `data/lessons.json`) |
+  | `search_lesson(query)` | câu hỏi / từ khóa của học viên | danh sách ≤2 đoạn phù hợp nhất (trả `[]` nếu nêu mã không tồn tại) | Không (chỉ đọc `data/lessons.json`) |
+  | `assess_learner_input(code, user_text)` | mã đoạn + câu chữ học viên gõ | trạng thái: `attack`, `out_of_scope_auth`, `short_or_low_effort`, `spoonfeed`, `no_data`, `misconception_match`, `substantive` | Không (chỉ phân tích cục bộ) |
+  | `check_answer(code, user_text)` | mã đoạn + câu trả lời kiểm tra hiểu | `matched`, `missing`, `ratio`, `passed` (theo ranh giới từ `_contains_term`) | Không (chỉ chấm thử trong phiên, không ghi điểm LMS) |
+  | `next_speaker(assessment, check_res)` | kết quả `assess_learner_input` và `check_answer` | route điều phối (`refuse_attack`, `refuse_scope`, `clarify`, `no_data`, `ta_no_spoonfeed`, `ta_fix`, `classmate_challenge`, `quiz_pass`) | Không (chỉ định tuyến trong phiên) |
 
-- **Mức tự động:** [ ] AI gợi ý, người quyết · [x] **AI tự làm khi chắc, chuyển người / dừng lại khi không** · [ ] AI tự làm — Vì sai kiến thức khiến học viên nhớ nhầm là hậu quả đắt nhất, nên hệ thống chỉ tự phản hồi khi đối chiếu được với `[mã đoạn]` trong `data/lessons.json`; nếu thiếu thông tin, ngoài bài học, hoặc học viên đòi chấm điểm chính thức thì dừng/từ chối hoặc để học viên tự đối chiếu mã đoạn gốc.
-- **Chỗ chặn rủi ro:** (1) Cổng kiểm tra đầu vào chặn prompt injection, xin đáp án hàng loạt và câu trả lời đối phó 1 chữ trước khi gọi model; (2) Mọi câu giải thích của Trợ giảng buộc phải bám kết quả `get_passage`/`search_lesson`, không có đoạn khớp thì trả lời "không có trong tài liệu bài học"; (3) Khi phát hiện học viên đồng tình với hiểu nhầm của bạn học AI, `director` ép chuyển sang `teaching_assistant` để sửa đúng ngay trước khi kết thúc phiên.
+- **Mức tự động:** [ ] AI gợi ý, người quyết · [x] **AI tự làm khi chắc, chuyển người / dừng lại khi không** · [ ] AI tự làm — Vì sai kiến thức khiến học viên nhớ nhầm là hậu quả đắt nhất, nên hệ thống chỉ tự phản hồi khi đối chiếu được với `[mã đoạn]` trong `data/lessons.json`; nếu thiếu thông tin, ngoài bài học, hoặc học viên đòi chấm điểm chính thức thì dừng/từ chối hoặc hướng dẫn đối chiếu mã đoạn gốc.
+- **Chỗ chặn rủi ro:** (1) Input Guard (`assess_learner_input`) chặn prompt injection, giả danh giảng viên, đòi chấm điểm LMS, xin đáp án hàng loạt và câu đối phó ngắn `≤15` ký tự trước khi gọi model; (2) Handoff Allowlist khóa quyền không truyền đáp án chuẩn cho `classmate_confused` và ghi rõ vào trace; (3) Output Guardrail (`_output_guardrail`) hậu kiểm mọi phản hồi thật của model, lọc sạch mã `[DXX-XX]` bịa ngoài `data/lessons.json` và chặn lỡ tiết lộ đáp án ở nhánh `classmate_challenge` / `ta_no_spoonfeed`; (4) khi học viên đồng tình với hiểu nhầm, `director` ép chuyển sang `teaching_assistant` để sửa đúng ngay trước khi kết thúc phiên.
 - **Chỗ người duyệt:** Học viên tự kiểm chứng lại qua `[mã đoạn]` được trích dẫn và có quyền bỏ qua/chuyển thẳng sang câu kiểm tra (`G8`); giảng viên duyệt kho đoạn bài học và danh sách hiểu nhầm phổ biến trong `data/lessons.json`; AI không tự ghi điểm lên hệ thống LMS.
 - **Nguyên tắc thiết kế** (≥3, bắt buộc G10):
 
   | Nguyên tắc | Chỗ cụ thể trên sơ đồ / trong bản chạy thử |
   |---|---|
-  | **G10 — Thu hẹp phạm vi khi không chắc** *(bắt buộc)* | Nhánh `CLARIFY` (hỏi lại 1 câu khi input `≤ 15` ký tự hoặc mơ hồ) và nhánh `NO_DATA` (nói "không có trong tài liệu bài học" khi `search_lesson` không khớp). |
-  | **G11 — Giải thích vì sao / có căn cứ** | Vai `teaching_assistant` luôn kèm `[mã đoạn]` và chỉ ra cụ thể học viên đúng ở ý nào, thiếu ở ý nào. |
-  | **G1/G2 — Nói rõ khả năng & giới hạn** | Đầu câu luôn gắn nhãn vai rõ ràng (`[Bạn học AI - có thể hiểu sai]`, `[Trợ giảng AI - theo tài liệu]`, `[Bộ điều phối]`) để học viên biết nên tin ai. |
-  | **G8 — Dễ bỏ qua / chuyển hướng** | Cho phép học viên gõ từ khóa chuyển thẳng sang câu kiểm tra hiểu hoặc yêu cầu trợ giảng giải thích trực tiếp nếu không muốn tiếp tục tranh luận với bạn học AI. |
+  | **G10 — Thu hẹp phạm vi khi không chắc** *(bắt buộc)* | Nhánh `clarify` (hỏi lại 1 câu khi input `≤ 15` ký tự hoặc mơ hồ) và nhánh `no_data` (nói rõ không có trong tài liệu khi `search_lesson` trả `[]`). |
+  | **G11 — Giải thích vì sao / có căn cứ** | Vai `teaching_assistant` luôn kèm `[mã đoạn]` hợp lệ trong `data/lessons.json` và chỉ rõ học viên đúng ở ý nào, thiếu ở ý nào. |
+  | **G1/G2 — Nói rõ khả năng & giới hạn** | Đầu câu luôn gắn nhãn vai rõ ràng (`[Bạn học AI - có thể hiểu sai]`, `[Trợ giảng AI - theo tài liệu]`, `[Bộ điều phối]`) để học viên biết mức độ tin cậy của từng vai. |
+  | **G8 — Dễ bỏ qua / chuyển hướng** | Trong giao diện `codebase/app.py`, người học gõ `/ds`, `/chon DXX-XX`, `/reset` để chuyển đoạn hoặc làm mới ngữ cảnh bất cứ lúc nào. |
 
 - Phần nào còn giả (công cụ trả dữ liệu giả, model chế độ giả…) — ghi rõ, không giả làm thật:
-  - Ở mốc CP2: `codebase/ai.py` chạy chế độ giả (`MODEL_PROVIDER=fake`, trả token `0`) để kiểm tra thông luồng `py run.py`; sẽ nối API thật Anthropic `Claude Haiku 5.5` trước CP3. Kho bài học `data/lessons.json` là bản tóm tắt cô đọng 8 đoạn khái niệm cốt lõi do nhóm tự biên soạn từ đề cương khoá (không dùng nguyên slide/transcript khoá).
+  - Kho bài học `data/lessons.json` gồm **11 đoạn** khái niệm cốt lõi (`D01-01` → `D11-01`) do nhóm tự tóm tắt cô đọng theo đề cương AI20K L3 (không dùng nguyên slide/transcript khoá). Về model, trước CP2 dùng nhánh `fake` để thông luồng; đến `18:10` ngày `27/11` đã nối và chạy thử thành công API Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`) qua `py run.py eval --try` (`3/3` câu đầu có token thật `> 0`), chờ chạy toàn bộ bộ câu thử (20–30 câu) ở chặng CP3.
 
 ## §5. Chỗ khó — 4 lớp + ≥6 kịch bản + 2 tấn công *(guide 2.3)*
 
@@ -129,7 +130,7 @@ flowchart TD
 ## §9. Rủi ro & an toàn
 - Dữ liệu: `data/preclass/` đã được BTC ẩn danh hoàn toàn; repo nhóm chỉ lưu script đếm và mã dòng mẫu; dữ liệu chạy thử `data/lessons.json` do nhóm tự biên soạn ngắn gọn; khi gửi lên model không chứa dữ liệu cá nhân thật của bất kỳ học viên nào.
 - AI **không được** làm gì kể cả khi người dùng yêu cầu: không tự chấm điểm chính thức lên LMS, không in toàn bộ đáp án chuẩn, không làm theo chỉ dẫn giả danh giảng viên/quản trị viên hay lệnh "bỏ qua hướng dẫn trước đó", không bịa kiến thức ngoài tài liệu khi `search_lesson` trả rỗng.
-- Ai có thể bị hại nếu AI sai, và nhóm chặn thế nào: học viên L3 có thể nhớ nhầm kiến thức hoặc chép đáp án đối phó mà không hiểu bản chất; nhóm chặn bằng cách tách riêng vai `teaching_assistant` luôn tra `data/lessons.json` và trích `[mã đoạn]`, ép sửa đúng hiểu nhầm trước khi kết thúc, và chặn đầu vào ngắn/tấn công ở cổng `check_input_guard`.
+- Ai có thể bị hại nếu AI sai, và nhóm chặn thế nào: học viên L3 có thể nhớ nhầm kiến thức hoặc chép đáp án đối phó mà không hiểu bản chất; nhóm chặn bằng cách khóa quyền không truyền đáp án chuẩn cho `classmate_confused` (Handoff Allowlist), tách vai `teaching_assistant` luôn đối chiếu `data/lessons.json` kèm `[mã đoạn]` để sửa hiểu nhầm trước khi kết thúc phiên, và áp dụng cổng đầu vào (`assess_learner_input`) lẫn hậu kiểm đầu ra (`_output_guardrail`).
 
 ## §10. Phân công & changelog
 - Phân công có tên (theo chặng, chia cặp — guide "Cách chia việc"):
@@ -142,7 +143,7 @@ flowchart TD
 
 | Thời điểm | Đổi gì | Vì sao (trỏ về câu thử / lỗi / bằng chứng nào) |
 |---|---|---|
-| | | |
+| 27/11 18:50 | Đồng bộ `spec.md` (§4, §9), `README.md`, `AGENTS.md`, `DATA_CARD.md`, `eval/README.md` và nhánh `no_data` trong `agent.py` theo bản `main` đã merge PR #1 & #2 (`11` đoạn bài học, tên hàm thật trong `tools.py`, Handoff Allowlist, `_output_guardrail`, kết quả nối thử `claude-haiku-5-5`); giữ nguyên §7 & `eval/metric_spec.yaml` | Sau khi hợp nhất PR #1 (`data/lessons.json` tăng lên 11 đoạn, sửa `tools.py`/`app.py`) và PR #2 (`eval/README.md`), cập nhật tài liệu khớp 100% với code chạy thật trước chặng CP3 |
 
 **Sau CP4 (đến 23:59 Thứ Bảy 28/11)** (sửa theo góp ý — không sửa chuẩn "đạt", câu thử, số bằng chứng, kết quả các lượt đã chạy)
 

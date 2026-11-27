@@ -5,7 +5,7 @@
 ## 1. Dataset → xử lý
 
 - Bằng chứng pain: `data/preclass/` (436/721 học viên hoạt động, 05–25/11/2026) đếm bằng `evidence/count.py`.
-- Kho dữ liệu chạy thử hiện có 11 đoạn khái niệm AI20K Level 3 trong `data/lessons.json`. Bản cập nhật của Tân thêm `D02-01`, `D07-01`, `D09-01` vào 8 đoạn gốc, có trong commit `d981b18` đã gộp vào `51cac9d`. Các đoạn do nhóm tự tóm tắt có cấu trúc (`content`, `misconception`, `check_question`, `key_points`). `data/DATA_CARD.md` đang ghi 8 đoạn, cần Quân cập nhật theo kho hiện tại.
+- Kho dữ liệu chạy thử hiện có 11 đoạn khái niệm AI20K Level 3 trong `data/lessons.json`. Bản cập nhật của Tân thêm `D02-01`, `D07-01`, `D09-01` vào 8 đoạn gốc, có trong commit `d981b18` đã gộp vào `51cac9d`. Các đoạn do nhóm tự tóm tắt có cấu trúc (`content`, `misconception`, `check_question`, `key_points`). `data/DATA_CARD.md` đã được cập nhật thành 11 đoạn.
 
 ## 2. Bộ câu thử dựng ra sao
 
