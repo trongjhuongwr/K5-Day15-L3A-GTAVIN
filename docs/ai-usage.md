@@ -6,6 +6,7 @@ README của nhóm có mục "Dùng AI vào việc gì" (2–3 dòng, bắt bu�
 
 | Việc | Công cụ AI | AI làm gì | Người kiểm/sửa gì | Ai phụ trách |
 |---|---|---|---|---|
+
 | Code bản chạy thử | Antigravity (Gemini) | Hỗ trợ dựng khung `agent.py`, `ai.py`, cài `handoff_allowlist` và `_output_guardrail` (Hưởng); gia cố `_contains_term`, `_STOPWORDS` trong `tools.py` và `active_code` trong `app.py` (Tân) | Hưởng kiểm thử toàn bộ 12 tuyến, nối thật Anthropic `claude-haiku-5-5` qua `eval --try` và duyệt merge; Tân giữ nguyên chữ ký 5 `@tool`, tự test ca biên và `eval --fake`/`--try` | Nguyễn Trọng Hưởng, Trần Minh Tân |
 | Prompt / thiết kế lời gọi mô hình | Antigravity (Gemini) | Gợi ý system prompt 3 vai (`director`, `classmate_confused`, `teaching_assistant`) và cơ chế tách dữ liệu allowlist cho `classmate_confused` | Đọc kiểm từng output thật trên `eval/run-try.csv` (`T01`–`T03`) để bảo đảm bạn học AI không lộ đáp án và Trợ giảng trích đúng `[mã đoạn]` | Nguyễn Trọng Hưởng |
 | Đào data (viết script đếm, gợi ý nhãn) | Antigravity (Gemini) | Viết script `evidence/count.py` (thư viện chuẩn) đọc `data/preclass/` và tổng hợp 11 chỉ số | Đối chiếu định nghĩa cột trong `column_dictionary.csv`, kiểm tay 6 mã dòng mẫu ẩn danh trong `evidence/data-mining.md` (11/11 chỉ số chạy lại khớp) | Nguyễn Trọng Hưởng, Phạm Ngọc Trung Quân |

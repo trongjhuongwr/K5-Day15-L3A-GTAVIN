@@ -7,13 +7,13 @@
 | Nguồn | Đạt ngưỡng? | File |
 |---|---|---|
 | Đào data `data/preclass/` (`x/N`, %, script chạy lại được, 6 ví dụ ẩn danh) | ☑ | [`evidence/data-mining.md`](data-mining.md) · [`evidence/count.py`](count.py) |
-| Đào kênh Discord công khai của khoá (nguồn kiểm chéo — bổ sung trước CP3) | ☐ *(đang thu thập)* | *(sẽ ghi tại `evidence/discord-check.md` trước CP3)* |
+| Đào kênh Discord công khai của khoá (nguồn kiểm chéo) | ☐ *(chờ số đếm và trích đoạn đã ẩn danh)* | [Quy tắc lấy mẫu và bàn giao](discord-check.md) |
 | Phỏng vấn / Khảo sát | ☐ *(không dùng)* | Nhóm chọn đào data hành vi thật + kênh công khai khoá |
 
 ## 2. Số chính
 
 - **Đào data `data/preclass/` (436/721 học viên hoạt động, 05–25/11/2026):**
-  - Bộ điều phối chèn bạn học AI vào **385/761 (50.6%)** đoạn bài giảng, tạo **13.975** lượt hiển thị (`agent_message_shown`), nhưng chỉ có **151/13.975 (1.08%)** lượt học viên trả lời trong khung thảo luận.
+  - **385/761 (50.6%)** quyết định của bộ điều phối có chèn bạn học AI. Trong toàn bộ đợt log, ghi nhận **151** phản hồi thảo luận trên **13.975** lượt hiển thị bạn học AI (**1.08%**).
   - **909/1.223 (74.3%)** câu nhắn AI đã chấm có `rubric_y_moi = 0` (chưa tạo ra diễn đạt ý mới); `rewards.csv` ghi nhận **0/228** lượt thưởng cho `giai_thich` và `phan_hoi_xay_dung`.
   - **887/1.260 (70.4%)** câu AI trả lời thiếu mốc trích dẫn (`moc_trich_dan` rỗng); **150/1.260 (11.9%)** câu hỏi ngắn `≤ 15` ký tự và nhóm này bị lạc bài tới **84/144 (58.3%)** (`rubric_bam_bai = 0`).
   - **399/1.968 (20.3%)** lượt làm câu kiểm tra cuối ngày (`pre_post_post`) bị sai ngay lần đầu, xảy ra ở **69/77 (89.6%)** học viên làm bài; **102/453 (22.5%)** lượt hoàn thành mini-lab kết thúc bằng bấm bỏ qua (`skipped = true`).
@@ -25,11 +25,11 @@
 3. Ví dụ ẩn danh `C00128` (`chat.csv`, `hv = L0384`): `video_discussion_reply` trả lời lại `classmate_deep_thinker` (`24` ký tự) nhưng `rubric_y_moi = 0`.
 4. Ví dụ ẩn danh `A00611` (`answers.csv`, `hv = L0213`, `kc = chatbot_is_app_around_model`): làm sai ngay lần đầu (`lan_thu = 1`) ở bài kiểm tra cuối ngày `pre_post_post`.
 5. Ví dụ ẩn danh `L0287` (`events.csv`, `d01-lab-ban-la-llm`): kết thúc mini-lab ở bước `1/2` bằng `skipped = true`.
-6. *(Sẽ bổ sung thêm trích dẫn câu hỏi nguyên văn từ kênh công khai Discord của khoá — tối đa 2 câu mỗi tin, bỏ tên — trước CP3 10:00 T7).*
+Các trích đoạn từ kênh công khai của khoá sẽ được ghi trong [bảng bàn giao Discord](discord-check.md#bàn-giao-cho-đạt) khi có mẫu thật.
 
 ## 4. Các nguồn có khớp nhau không
 
-Data `preclass/` chỉ ra rõ học viên gần như bỏ qua bạn học AI hiện tại (`1.08%` phản hồi) và thiếu tự diễn đạt (`74.3%` `rubric_y_moi = 0`), đồng thời hay sai bài kiểm tra (`89.6%` người làm bài từng sai ít nhất 1 câu). Chữ câu hỏi thật trên kênh Discord công khai sẽ được dùng ở bước tiếp theo để kiểm chứng *vì sao* học viên không tương tác và bổ sung đầu vào thật cho bộ câu thử.
+Log `preclass/` ghi khoảng 1,08 phản hồi thảo luận trên 100 lượt hiển thị và 74,3% câu nhắn đã chấm có điểm ý mới bằng 0. Trong 77 người làm kiểm tra sau bài, 69 người từng sai ít nhất một câu ở lần thử đầu. Mẫu Discord sẽ bổ sung nội dung học viên hỏi khi vướng. Việc đối chiếu hai nguồn chờ số đếm và trích đoạn thật.
 
 ## 5. Kết luận
 
