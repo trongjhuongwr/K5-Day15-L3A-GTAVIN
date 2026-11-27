@@ -14,5 +14,6 @@ README của nhóm có mục "Dùng AI vào việc gì" (2–3 dòng, bắt bu�
 | Sinh data `synthetic` (nếu có) | Antigravity (Gemini) | Đề xuất bổ sung 3 đoạn kiến thức cô đọng (`D02-01`, `D07-01`, `D09-01`) vào `data/lessons.json` | Kiểm tay 11/11 đoạn đối chiếu đề cương AI20K L3, không chép nguyên slide/transcript; kiểm tra không gây nhiễu câu ngoài bài `T09` | Trần Minh Tân |
 | Chấm cột `pass` bằng LLM (nếu có) | | | Kiểm tra thủ công __ câu thử, khớp __/__ | |
 | Slide, văn bản | | | | |
+| Rà hồ sơ Eval CP1–CP2 của Đạt | Codex | Đối chiếu phân công và mốc nộp; làm rõ cấu trúc benchmark, cách chấm và giới hạn nguồn; chuẩn bị bảng chấm chéo 5 output trong `eval/README.md` | Chờ Lê Thành Đạt kiểm lại nội dung và phối hợp Quân kiểm nguồn; chấm chéo đang chờ output và hai người chấm | Lê Thành Đạt |
 
 **Không dùng AI để:** tạo người được phỏng vấn, trích dẫn, câu trả lời khảo sát; sửa kết quả các lượt đã chạy (`eval/run-*.csv`, `cost/simulate-*.csv`, `traces/`).
