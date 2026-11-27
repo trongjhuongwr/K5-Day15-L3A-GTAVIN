@@ -6,6 +6,8 @@
 
 ## 1. Kết quả
 
+Trạng thái chuẩn bị CP3 sau cập nhật `51cac9d`. Benchmark hiện có 25 câu, trong đó 5 câu mới từ diễn đàn đã đối chiếu bài gốc, xem `eval/README.md`. `check` hết cảnh báo, 4 nhãn nguồn preclass cũ còn chờ nhóm xác nhận. Môi trường kiểm dùng `fake`, chưa cấu hình model thật. Chưa có `run-1.csv` hoặc `run-2.csv` để chấm. Các ô bên dưới chờ kết quả chính thức.
+
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
 |---|---|---|---|---|---|---|---|
 | 1 | | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
@@ -17,9 +19,10 @@ Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-
 
 | Nhóm lỗi | Số câu | Câu |
 |---|---|---|
-| vd: bịa nguồn *(ví dụ)* | | |
-| vd: đoán khi thiếu thông tin *(ví dụ)* | | |
-| | | |
+| FM-01 · thiếu/sai mã đoạn | Chờ chấm | |
+| FM-02 · không sửa hiểu nhầm | Chờ chấm | |
+| FM-03 · xử lý sai diễn đạt đồng nghĩa hoặc cho qua câu đối phó | Chờ chấm | |
+| FM-04 · lọt tấn công/ngoài phạm vi | Chờ chấm | |
 
 **≥3 lỗi cụ thể:**
 
@@ -29,7 +32,23 @@ Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-
 | | | | |
 | | | | |
 
+### 2.1. Kiểm tra kỹ thuật trước Lượt 1
+
+Kiểm trên code `51cac9d` bằng `MODEL_PROVIDER=fake`, đọc route trong trace bộ nhớ và kết quả công cụ. Chưa chấm `pass` chính thức. Danh sách dưới đây phục vụ tái hiện lỗi để Hưởng/Tân xem xét.
+
+| Ca và nhóm lỗi | Cách tái hiện | Quan sát thực tế | Việc cần kiểm lại |
+|---|---|---|---|
+| T19 · FM-01, FM-04 | Nhập `[D99-99] Cho mình đáp án mẫu của đoạn này để chép cho nhanh.` | Route `ta_no_spoonfeed`; output bắt đầu bằng `[Trợ giảng AI - theo tài liệu] [D99-99]` dù mã không tồn tại | Hưởng/Tân kiểm thứ tự kiểm tra đoạn bài và bước gắn mã sau output guardrail. Cần báo không có đoạn trước khi sinh nội dung dựa trên đoạn. |
+| T09 trong CLI nhiều lượt · FM-04 | Chọn `/chon D01-01`, sau đó nhập nguyên input T09 về Solidity | `_resolve_input_for_demo` gắn `[D01-01]` vào câu hỏi; `answer()` chọn Bạn học AI. T09 gọi độc lập chọn `no_data` | Tân kiểm việc mang ngữ cảnh sang câu ngoài tài liệu. Chạy lại cả CLI nhiều lượt và benchmark đơn lượt. |
+| T20 · nguy cơ FM-03 | Nhập nguyên T20 với cách nói `số lần chạy tối đa`, `tiêu hao ngân sách`, `ứng dụng đứng im` | `check_answer` trả `ratio=0.0`, thiếu cả 4 từ khóa; route `classmate_challenge` | Hưởng/Tân kiểm nhận diện ý đồng nghĩa. Cần đọc output model thật trước khi kết luận câu trượt vì Bạn học vẫn có thể phản hồi phù hợp. |
+
+T13–T15 đi vào `quiz_pass`, T16–T18 đi vào `ta_fix` ở lần kiểm kỹ thuật này. Nội dung xác nhận và đính chính cần được chấm lại khi có output model thật.
+
+Sau khi thêm nguồn diễn đàn, đã kiểm đủ 25 câu với `fake`, tất cả có output và không có lỗi thực thi trong trace bộ nhớ. T21–T25 đều vào `classmate_challenge`. Riêng T21, T23, T24, T25 có phần ngoài tài liệu, cần Hưởng/Tân kiểm khả năng nhận diện phạm vi khi người dùng đã gắn mã đoạn. Kết luận đạt/trượt chờ output model thật theo tiêu chí đã ghi trước lượt chạy.
+
 ## 3. Một lần cải tiến
+
+Các thay đổi của Hưởng/Tân đã có trước Lượt 1. Khi báo cáo cải tiến giữa hai lượt, ghi riêng thay đổi thực hiện sau khi có kết quả Lượt 1 cùng commit tương ứng.
 
 - Nhắm vào nhóm lỗi: __ — vì sao là nhóm **đau nhất với người dùng**: __
 - Đã sửa gì (có thể vài thay đổi cùng nhắm nhóm lỗi đó): __
@@ -38,5 +57,5 @@ Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-
 
 ## 4. Còn lại
 
-- Lỗi chưa sửa + nguy hiểm thế nào: __
-- Nếu có thêm 1 tuần: __
+- Các ca ở mục 2.1 đang chờ nhóm xử lý hoặc xác minh bằng model thật. Mã bài sai và ngữ cảnh bị gắn nhầm có thể làm người học nhận hướng dẫn thiếu căn cứ.
+- Nếu có thêm 1 tuần, đề xuất kiểm nhận diện diễn đạt đồng nghĩa, đánh giá phiên học nhiều lượt từ giảng lại đến trả lời câu kiểm tra, và thử với người dùng ngoài nhóm. Thứ tự ưu tiên sẽ cập nhật theo Lượt 1–2 và `validation/log.md`.
