@@ -10,6 +10,7 @@ import json
 import os
 import sys
 from collections import Counter, defaultdict
+from statistics import quantiles
 
 for _stream in (sys.stdout, sys.stderr):
     try:
@@ -45,6 +46,7 @@ def main():
     # 1. Đếm từ events.csv (streaming để nhẹ RAM)
     active_hvs = set()
     ev_counts = Counter()
+    lecture_openings_by_hv = Counter()
     agent_shown = 0
     agent_replied_total = 0
     agent_no_cite = 0
@@ -58,7 +60,9 @@ def main():
             active_hvs.add(row["hv"])
             t = row["type"]
             ev_counts[t] += 1
-            if t == "agent_message_shown":
+            if t == "lecture_opened":
+                lecture_openings_by_hv[row["hv"]] += 1
+            elif t == "agent_message_shown":
                 agent_shown += 1
             elif t == "agent_replied":
                 agent_replied_total += 1
@@ -116,6 +120,22 @@ def main():
     print(f"Hoc vien co hoat dong (events.csv): {len(active_hvs)}/{len(learners)} ({pct(len(active_hvs), len(learners)):.1f}%)")
     print(f"Hoc vien tung nhan AI (chat.csv): {len(chat_hvs)}/{len(active_hvs)} ({pct(len(chat_hvs), len(active_hvs)):.1f}%)")
     print()
+    active_openings = [lecture_openings_by_hv[hv] for hv in active_hvs]
+    if active_openings:
+        quartiles = quantiles(active_openings, n=4, method="inclusive") if len(active_openings) > 1 else active_openings * 3
+        monthly_openings = [count * 30 / 20 for count in active_openings]
+        low = sum(count <= 8 for count in monthly_openings)
+        medium = sum(8 < count <= 18 for count in monthly_openings)
+        high = len(monthly_openings) - low - medium
+        openings_total = sum(active_openings)
+        openers = len(lecture_openings_by_hv)
+        mean = openings_total / openers if openers else 0.0
+        print("=== LUOT MO BAI VA PERSONA ===")
+        print(f"lecture_opened: {openings_total} luot / {openers} nguoi mo bai ({mean:.2f} luot/nguoi)")
+        print(f"P25, P50, P75 tren {len(active_openings)} hoc vien hoat dong: {quartiles}")
+        print(f"So nguoi theo luot mo bai quy doi thang (x30/20): <=8: {low}; >8 den 18: {medium}; >18: {high}")
+        print()
+
     print("=== CHI SO PAIN CHINH (A4 - LOP HOC CHU DONG) ===")
     print(f"1. Bo dieu phoi chen ban hoc AI: {dir_inserted}/{dir_total} ({pct(dir_inserted, dir_total):.1f}%) doan bai giang")
     print(f"2. Luot ban hoc AI hien cho hoc vien (agent_message_shown): {agent_shown}")
