@@ -5,7 +5,7 @@
 ## 1. Dataset → xử lý
 
 - Bằng chứng pain: `data/preclass/` (436/721 học viên hoạt động, 05–25/11/2026) đếm bằng `evidence/count.py`.
-- Kho dữ liệu chạy thử: `data/lessons.json` gồm 8 đoạn khái niệm cốt lõi AI20K Level 3 (`D01-01` → `D11-01`) do nhóm tự tóm tắt có cấu trúc (`content`, `misconception`, `check_question`, `key_points`), xem `data/DATA_CARD.md`.
+- Kho dữ liệu chạy thử: `data/lessons.json` gồm `11` đoạn khái niệm cốt lõi AI20K Level 3 (`D01-01` → `D11-01`) do nhóm tự tóm tắt có cấu trúc (`content`, `misconception`, `check_question`, `key_points`), xem `data/DATA_CARD.md`.
 
 ## 2. Bộ câu thử dựng ra sao
 

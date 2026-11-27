@@ -125,11 +125,12 @@ def answer(text: str) -> dict:
             )
         }
     if route == "no_data":
+        lessons = _load_lessons()
+        topics_str = ", ".join(f"[{it.get('code', '')}] {it.get('topic', '')}" for it in lessons)
         return {
             "output": (
                 "[Trợ giảng AI - theo tài liệu] Nội dung này không có trong tài liệu bài học hiện tại của hệ thống. "
-                "Hiện kho bài học mẫu có các chủ đề từ D01-01 đến D11-01 (chatbot bọc quanh model, temperature, "
-                "tool contract, MAX_STEPS, autonomy policy, data giả lập, 4 hình dạng agent, prompt injection). "
+                f"Hiện kho bài học có {len(lessons)} đoạn: {topics_str}. "
                 "Bạn muốn ôn lại đoạn nào?"
             )
         }
