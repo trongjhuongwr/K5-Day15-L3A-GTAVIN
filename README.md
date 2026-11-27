@@ -47,20 +47,20 @@ Nối model thật (Anthropic Claude Haiku 5.5): xem [docs/connect-model.md](doc
 
 | File | Viết gì | Bước guide |
 |---|---|---|
-| `codebase/agent.py` | `answer(text)` — luồng chính Multi-agent (`director`, `classmate_confused`, `teaching_assistant`), đúng sơ đồ ở `spec.md` §4 | 3.2 |
-| `codebase/tools.py` | Công cụ của bài toán (`get_passage`, `check_answer`, `learner_state`, `next_speaker`…), mỗi công cụ một hàm có `@tool` | 2.2, 3.2 |
-| `codebase/ai.py` | `call_model(system, user)` — chỗ duy nhất gọi model (`Claude Haiku 5.5` qua API Anthropic, trước CP2 chạy chế độ giả `fake`) | 3.3 |
+| `codebase/agent.py` | `answer(text)` — luồng Multi-agent 3 vai (`director`, `classmate_confused`, `teaching_assistant`), khóa quyền truyền dữ liệu (**Handoff Allowlist**) và hậu kiểm đầu ra (`_output_guardrail`) khớp `spec.md` §4 | 3.2 |
+| `codebase/tools.py` | 5 công cụ `@tool` chỉ đọc/phân tích cục bộ: `get_passage`, `search_lesson`, `assess_learner_input`, `check_answer`, `next_speaker` | 2.2, 3.2 |
+| `codebase/ai.py` | `call_model(system, user)` — điểm gọi model duy nhất (Anthropic `Claude Haiku 5.5` với mã `claude-haiku-5-5`; hỗ trợ chế độ giả `fake` khi chưa điền `.env`) | 3.3 |
 
 ## Phần nào thật, phần nào giả
 
 | Thành phần | Thật / Giả | Ghi chú |
 |---|---|---|
-| Lời gọi AI ở quyết định trung tâm | **Giả (trước CP2) → Thật (trước CP3)** | Model dự kiến: Anthropic Claude Haiku 5.5 (chế độ giả chỉ dùng đến CP2) |
-| Kho đoạn bài giảng & câu hỏi kiểm tra | **Tự dựng từ nội dung khoá** | Trích/viết lại ngắn có mã đoạn, mô tả trong `data/DATA_CARD.md` |
+| Lời gọi AI ở quyết định trung tâm | **Đã nối API thật (chạy thử `eval --try`)** | Dùng Anthropic `Claude Haiku 5.5` (`claude-haiku-5-5`) đo token từ `usage` thật; vẫn giữ nhánh `fake` cho kiểm thử nhanh không tốn phí |
+| Kho đoạn bài giảng & câu hỏi kiểm tra | **Tự biên soạn cô đọng (`11` đoạn)** | Tóm tắt theo đề cương khoá AI20K L3 (`D01-01` → `D11-01`), không sao chép slide/transcript, mô tả tại `data/DATA_CARD.md` |
 
 ## Dùng AI vào việc gì
 
-Nhóm sử dụng trợ lý lập trình AI để hỗ trợ rà soát yêu cầu khung repo, viết script thống kê `data/preclass/` và hỗ trợ dựng cấu trúc code/tài liệu; các thành viên tự thiết kế kiến trúc multi-agent, kiểm chứng lại toàn bộ số liệu thống kê, tự chấm câu thử và đối chiếu tài liệu bài học. Chi tiết: [docs/ai-usage.md](docs/ai-usage.md). Coding agent đọc [AGENTS.md](AGENTS.md).
+Nhóm dùng trợ lý lập trình AI để rà cấu trúc repo, hỗ trợ viết script thống kê `data/preclass/`, gợi ý gia cố công cụ/guardrail và biên tập tài liệu cho gọn rõ. Mọi số liệu, thiết kế luồng, câu thử và nội dung bài học đều do từng thành viên tự kiểm chứng lại trên dữ liệu và chạy code trực tiếp. Chi tiết xem [docs/ai-usage.md](docs/ai-usage.md); quy ước cho coding agent xem [AGENTS.md](AGENTS.md).
 
 ## File mẫu — điền ở bước nào
 
