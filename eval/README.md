@@ -13,8 +13,9 @@
 - Nguồn (`py run.py check` kiểm tự động): `data_that 4/12` (từ mẫu hành vi thật trong `data/preclass/`) · `tu_viet 8/12` (gồm các tình huống 4 lớp và 2 câu tấn công).
 - Bốn câu `T01`, `T06`, `T07`, `T10` được nhóm dựng lại từ chủ đề hoặc hành vi trong log ẩn danh. Log chỉ có độ dài và nhãn hành vi, nên câu chữ input là do nhóm biên soạn. Nhãn nguồn hiện có cần được Đạt và Quân đối chiếu với quy định nguồn thật của đề trước khi xác nhận đủ tỉ lệ 1/3. Kết quả `check` chỉ xác nhận nhãn khai báo.
 - Bộ CP2 dùng chung trong repo. CP3 mở rộng lên 24–25 câu có nguồn kiểm chứng, chốt trước Lượt 1 và dùng cùng bộ cho Lượt 2.
-- Bản chuẩn bị CP3 hiện có **25 câu** (`thuong 7`, `kho 15`, `tu_choi 3`). T01–T20 được giữ nguyên khi thêm T21–T25. T13–T20 do Codex hỗ trợ Đạt soạn, khai `tu_viet`, bổ sung ba chủ đề mới, ba ca hiểu nhầm, mã bài không tồn tại và cách diễn đạt đồng nghĩa.
-- Nhãn nguồn hiện tại là `data_that 9/25` (36%), `tu_viet 16/25`. T21–T25 lấy từ 5 câu hỏi diễn đàn có bài gốc đã đối chiếu. Bốn nhãn preclass cũ vẫn cần nhóm xác nhận điều kiện hợp lệ của đề. `check` đã hết cảnh báo cấu trúc và nhãn khai báo; việc chấp nhận đủ 1/3 nguồn vẫn phụ thuộc kết quả xác minh 4 câu cũ.
+- Bản chốt CP3 hiện có **30 câu** (`thuong 8`, `kho 19`, `tu_choi 3`). Tiếp nhận rà soát nguồn của Quân tại `evidence/data-mining.md` §9:
+  - `T01`, `T06`, `T07`, `T10` chuyển sang nhãn `tu_viet` *(lấy cảm hứng từ mã hành vi `preclass`, câu chữ do nhóm biên soạn)* để phản ánh trung thực nguồn dữ liệu.
+  - Bổ sung 5 câu diễn đàn có URL bài gốc đã đối chiếu (`T26`–`T30`: `F01`, `F02`, `F06`, `F09` và câu RAG `D07-01`) cùng với `T21`–`T25`, đều gắn nhãn `nguoi_dung` kèm URL và ghi rõ phần dịch/thêm mã đoạn → đạt **`nguoi_dung 10/30` (`33.3% ≥ 1/3` chuẩn R4)** và `tu_viet 20/30`.
 
 | Cột | Cách sử dụng |
 |---|---|
@@ -39,10 +40,15 @@
 | T23 | Vòng lặp kết thúc sớm khi tool_calls rỗng dù việc còn dang dở | [LangChain Forum, bài mở đầu ngày 25/09/2026](https://forum.langchain.com/t/reactagent-loop-exits-prematurely-when-llm-returns-text-only-message-with-empty-tool-calls-mid-task/4608) |
 | T24 | Kiểm định chéo dữ liệu giả lập và sinh bộ dữ liệu mới | [Cross Validated, câu hỏi ngày 25/01/2020](https://stats.stackexchange.com/questions/446412/cross-validation-and-synthectic-data-sets) |
 | T25 | So sánh hướng dẫn multi-agent với langgraph-supervisor | [LangChain Forum, bài mở đầu ngày 29/09/2025](https://forum.langchain.com/t/difference-of-creating-multi-agent/1679) |
+| T26 | Lưu ID cuộc chat để tái sử dụng lịch sử hội thoại (`F01`) | [OpenAI Developer Community](https://community.openai.com/t/can-i-consider-memory-in-chat-completion-api-requests/786851) |
+| T27 | Đặt `temperature = 0` có làm giảm bịa đặt và đúng hơn không (`F02`) | [OpenAI Developer Community](https://community.openai.com/t/is-the-lower-the-temperature-the-more-correct-the-answer-is/316029) |
+| T28 | Đặt bước người duyệt ở tool, luồng agent hay lớp chính sách (`F06`) | [LangChain Forum](https://forum.langchain.com/t/how-should-an-agent-handle-email-threads-in-langchain/4954) |
+| T29 | Ngăn chatbot lặp lại nguyên văn system prompt (`F09`) | [OpenAI Developer Community](https://community.openai.com/t/how-do-i-stop-the-chat-response-from-providing-the-prompt-verbatim/103475) |
+| T30 | Hạn chế RAG bot tự dùng kiến thức nền gây bịa khi chưa tra cứu | [OpenAI Developer Community](https://community.openai.com/t/limiting-using-own-knowledge-when-building-rag-bots/559583) |
 
-Đây là câu hỏi người dùng diễn đàn công khai bên ngoài khoá. Tính đại diện cho học viên L3 cần được đánh giá thêm khi thử người dùng. Bốn câu còn lại về ID hội thoại, temperature, nơi đặt bước duyệt email và lặp lại system prompt đang dự trữ, chờ Quân gửi URL bài gốc để đối chiếu chính xác.
+Các câu trên đều là câu hỏi người dùng thực tế từ diễn đàn công khai có URL gốc đã đối chiếu (`evidence/data-mining.md` §8–§9).
 
-T21, T23, T24, T25 có chi tiết API/thư viện/thống kê vượt phạm vi 11 đoạn hiện tại. Tiêu chí yêu cầu nói rõ phần tài liệu chưa có, đồng thời có thể gợi ôn nguyên lý liên quan. Câu hỏi tò mò được giữ đúng ý hỏi; việc gắn mã đoạn giúp xác định chủ đề nhưng không bổ sung kiến thức còn thiếu vào kho.
+T21, T23, T24, T25, T26, T28, T29 có chi tiết API/thư viện/thống kê vượt phạm vi 11 đoạn hiện tại. Tiêu chí yêu cầu nói rõ phần tài liệu chưa có, đồng thời gợi ôn nguyên lý liên quan trong `data/lessons.json`.
 
 ## 3. Metric và cách chấm
 

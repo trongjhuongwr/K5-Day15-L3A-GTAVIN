@@ -6,7 +6,7 @@
 
 ## 1. Kết quả
 
-Trạng thái chuẩn bị CP3 sau cập nhật `51cac9d`. Benchmark hiện có 25 câu, trong đó 5 câu mới từ diễn đàn đã đối chiếu bài gốc, xem `eval/README.md`. `check` hết cảnh báo, 4 nhãn nguồn preclass cũ còn chờ nhóm xác nhận. Môi trường kiểm dùng `fake`, chưa cấu hình model thật. Chưa có `run-1.csv` hoặc `run-2.csv` để chấm. Các ô bên dưới chờ kết quả chính thức.
+Trạng thái chuẩn bị CP3: Bộ `eval/benchmark.csv` đã được chốt ở **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, trong đó `10/30` câu `nguoi_dung` đối chiếu trực tiếp từ bài đăng thật theo kiểm chứng của Quân ở `evidence/data-mining.md` §9; `T01, T06, T07, T10` đã chuyển về `tu_viet`), `py run.py check` hết cảnh báo. Đã nối API thật `Claude Haiku 5.5` (`claude-haiku-5-5`). Các ô bên dưới chờ kết quả chạy Lượt 1 → Lượt 2 chính thức.
 
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
 |---|---|---|---|---|---|---|---|
