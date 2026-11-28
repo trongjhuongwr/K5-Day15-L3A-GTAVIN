@@ -6,6 +6,8 @@
 
 ## 1. Kết quả
 
+> Ghi chú chấm chéo ngày 28/11/2026: Đạt đã chốt 0/1/1/1/1 cho T02/T04/T06/T09/T11 của Lượt 1, khớp Hưởng 4/5. T02 còn bất đồng khi áp dụng metric học chủ động (xem `eval/README.md` §3). Các tổng dưới đây giữ theo CSV hiện tại, chưa phản ánh quyết định chung về T02; không coi đây là kết quả Đạt đã chấm lại toàn bộ hai lượt.
+
 Trạng thái Lượt 1 → Lượt 2 (`CP4`): Đã chạy đủ **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, `nguoi_dung 10/30`) với API thật Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`), `0` lỗi thực thi ở cả hai lượt. Sau 1 đợt cải tiến có mục tiêu ở `fb1352b`, tỷ lệ đạt tăng từ **`18/30 (60%)`** → **`29/30 (97%)`** (**đạt chuẩn `spec.md §7`**: tổng ≥ 80%, `tu_choi` `3/3 = 100%`, sửa hiểu nhầm `5/5 = 100%`).
 
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
