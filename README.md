@@ -35,7 +35,7 @@ Nối model thật (Anthropic Claude Haiku 5.5): xem [docs/connect-model.md](doc
 
 | Lệnh | Làm gì |
 |---|---|
-| `py run.py` | Chạy bản chạy thử (gõ đầu vào, nhận kết quả, kèm số lần gọi model / token) |
+| `py run.py` | Mở giao diện Web bản chạy thử (`http://127.0.0.1:8765`, kèm bảng X-Ray Trace; dùng `py codebase/app.py --cli` cho chế độ dòng lệnh) |
 | `py run.py check` | Kiểm `eval/benchmark.csv`, `eval/metric_spec.yaml` và `TEAMS.md` |
 | `py run.py eval --try` | Thử nối model với 3 câu đầu → `eval/run-try.csv` |
 | `py run.py eval` | Chạy cả bộ qua `codebase/agent.py` → `eval/run-N.csv` + `traces/run-N.jsonl` |
@@ -47,7 +47,8 @@ Nối model thật (Anthropic Claude Haiku 5.5): xem [docs/connect-model.md](doc
 
 | File | Viết gì | Bước guide |
 |---|---|---|
-| `codebase/agent.py` | `answer(text)` — luồng Multi-agent 3 vai (`director`, `classmate_confused`, `teaching_assistant`), khóa quyền truyền dữ liệu (**Handoff Allowlist**) và hậu kiểm đầu ra (`_output_guardrail`) khớp `spec.md` §4 | 3.2 |
+| `codebase/app.py` · `ui.html` | Giao diện Web (`ThreadingHTTPServer` thư viện chuẩn) + chế độ `--cli`: Bạn học AI mở lời trước, giữ `active_code`, hiển thị 3 vai & X-Ray Trace | 3.2 |
+| `codebase/agent.py` | `answer(text)` — luồng Multi-agent 3 vai (`director`, `classmate_confused`, `teaching_assistant`), xử lý hỏi ngược tự nhiên, **Handoff Allowlist** và `_output_guardrail` khớp `spec.md` §4 | 3.2 |
 | `codebase/tools.py` | 5 công cụ `@tool` chỉ đọc/phân tích cục bộ: `get_passage`, `search_lesson`, `assess_learner_input`, `check_answer`, `next_speaker` | 2.2, 3.2 |
 | `codebase/ai.py` | `call_model(system, user)` — điểm gọi model duy nhất (Anthropic `Claude Haiku 5.5` với mã `claude-haiku-5-5`; hỗ trợ chế độ giả `fake` khi chưa điền `.env`) | 3.3 |
 

@@ -76,6 +76,30 @@ def _output_guardrail(route: str, code: str, passage: dict, raw_text: str) -> st
     return text
 
 
+_PEER_PROMPT_BACK_CUES = (
+    "giảng lại phần nào",
+    "giảng phần nào",
+    "nói lại phần nào",
+    "chưa hiểu chỗ nào",
+    "chưa hiểu phần nào",
+    "không hiểu chỗ nào",
+    "không hiểu phần nào",
+    "vướng chỗ nào",
+    "vướng phần nào",
+    "bí chỗ nào",
+    "cần giúp phần nào",
+    "cần cứu phần nào",
+    "bắt đầu từ đâu",
+    "hôm nay học phần nào",
+)
+
+
+def _is_peer_prompt_back(text: str) -> bool:
+    """Nhận diện học viên đang hỏi ngược Bạn học AI xem bạn ấy vướng chỗ nào để bắt đầu giảng lại."""
+    q = _norm(text)
+    return any(cue in q for cue in _PEER_PROMPT_BACK_CUES)
+
+
 def answer(text: str) -> dict:
     # Bước 1: Xác định đoạn bài học liên quan qua công cụ chỉ đọc (hoặc rỗng nếu ngoài tài liệu)
     code = extract_code(text)
@@ -88,12 +112,30 @@ def answer(text: str) -> dict:
 
     # Bước 2: Cổng kiểm tra + Agent 1 (Director) phân tích trạng thái và chọn vai nói tiếp
     assessment = assess_learner_input(code, text)
-    check_res = check_answer(code, text) if code and assessment["status"] == "substantive" else {
-        "passed": False, "matched": [], "missing": [], "ratio": 0.0
-    }
-    decision = next_speaker(assessment, check_res)
-    route = decision["route"]
-    note(f"director -> {route} ({decision['agent']}): {decision['reason']}")
+    peer_prompt_back = _is_peer_prompt_back(text)
+
+    if assessment["status"] == "no_data" and peer_prompt_back:
+        lessons = _load_lessons()
+        if lessons:
+            passage = next((it for it in lessons if it.get("code") == "D03-01"), lessons[0])
+            code = passage.get("code", "")
+            check_res = {"passed": False, "matched": [], "missing": passage.get("key_points", []), "ratio": 0.0}
+            route = "classmate_challenge"
+            note(
+                f"director -> classmate_challenge (classmate_confused): "
+                f"học viên hỏi ngược chọn phần giảng lại, gợi mở từ [{code}]"
+            )
+        else:
+            route = "no_data"
+            check_res = {"passed": False, "matched": [], "missing": [], "ratio": 0.0}
+            note("director -> no_data (teaching_assistant): kho bài học rỗng")
+    else:
+        check_res = check_answer(code, text) if code and assessment["status"] == "substantive" else {
+            "passed": False, "matched": [], "missing": [], "ratio": 0.0
+        }
+        decision = next_speaker(assessment, check_res)
+        route = decision["route"]
+        note(f"director -> {route} ({decision['agent']}): {decision['reason']}")
 
     # Nhánh chặn an toàn / thu hẹp phạm vi (G10) — xử lý dứt khoát trước khi gọi model
     if route == "refuse_attack":
@@ -150,12 +192,20 @@ def answer(text: str) -> dict:
             f"block=[content,key_points] code={allowlist['code']}"
         )
         missing_str = ", ".join(allowlist["missing"])
+        if peer_prompt_back:
+            instruction = (
+                "Bạn học đang hỏi ngược lại xem bạn cần được giảng lại phần nào. "
+                "Hãy mở lời tự nhiên như bạn cùng lớp vừa học xong trên lớp (kiểu 'Phần ... nghĩa là sao?', "
+                "'Làm sao để ...?'), nêu cụ thể 1–2 câu hỏi về chỗ bạn còn rối hoặc hiểu nhầm ở trên."
+            )
+        else:
+            instruction = "Hãy phản hồi như một bạn học còn băn khoăn đúng chỗ còn thiếu đó để bạn ấy giải thích rõ hơn."
         user_prompt = (
             f"Chủ đề đoạn [{allowlist['code']}]: {allowlist['topic']}\n"
             f"Hiểu nhầm hay gặp: {allowlist['misconception']}\n"
-            f"Bạn học vừa giải thích: {text}\n"
-            f"Ý bạn học còn nói lướt qua / thiếu: {missing_str}\n"
-            "Hãy phản hồi như một bạn học còn băn khoăn đúng chỗ còn thiếu đó để bạn ấy giải thích rõ hơn."
+            f"Bạn học vừa nói: {text}\n"
+            f"Ý cốt lõi cần bạn ấy giảng cho rõ: {missing_str}\n"
+            f"{instruction}"
         )
         reply = call_model(SYSTEM_CLASSMATE, user_prompt)
         out = _output_guardrail(route, code, passage, reply["text"])

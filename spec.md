@@ -7,14 +7,14 @@ Data BTC cấp đã dùng (nếu có — không commit nguyên file): `data/prec
 
 ## §0. Hiện tại việc này diễn ra thế nào *(guide 1.1)*
 - Luồng hiện tại của việc này, trong khoá hoặc trên app thật (3–5 bước):
-  1. Học viên L3 đăng nhập trang `preclass-online.com` trước buổi học chính.
-  2. Mở video bài giảng; trong lúc xem, hệ thống lớp học AI (`director`) tự quyết định cho bạn học AI (`classmate_*`) xen vào khung thảo luận dưới video, hoặc học viên tự bấm hỏi trợ giảng AI (`teaching_assistant`).
-  3. Học viên làm câu hỏi giữa video (`video_quiz`), bước thực hành mini-lab (`thuc_hanh`) hoặc câu ôn tập cuối ngày (`pre_post_post`).
+  1. Trước buổi học, học viên L3 đăng nhập `preclass-online.com` xem video để nắm khái niệm nền trước khi lên lớp.
+  2. Trong lúc xem video, hệ thống (`director`) xen bạn học AI (`classmate_*`) vào khung thảo luận, hoặc học viên bấm hỏi trợ giảng (`teaching_assistant`).
+  3. Sau buổi học trên lớp, khi học viên mở lại PreClass để chuẩn bị sang bài mới ngày hôm sau, hiện không có bước củng cố chủ động để kiểm tra xem học viên đã thật sự nắm chắc bài hôm trước chưa; câu kiểm tra cuối bài (`pre_post_post`) vẫn dễ sai ngay lần đầu vì học viên chưa từng tự giảng lại bằng lời của mình.
 - Công cụ / AI đang được dùng cho việc này (nếu có) + nguồn:
   - Trên `preclass-online.com` hiện đã có trợ giảng AI (`teaching_assistant`), các bạn học AI (`classmate_inquisitive`, `classmate_deep_thinker`, `classmate_clown`) và bộ điều phối `director` (nguồn: mô tả cấu trúc trong `data/preclass/README.md` và `column_dictionary.csv` do BTC cấp).
 
 ## §1. Người dùng & bằng chứng *(guide 1.1, 1.2)*
-- Người dùng chính (một vai cụ thể): Học viên lớp L3 đi làm ban ngày, tối tự học video và làm mini-lab trên trang pre-class trước buổi học.
+- Người dùng chính (một vai cụ thể): Học viên lớp L3 đi làm ban ngày, tối ôn lại bài trên PreClass sau buổi học trên lớp để nắm chắc trước khi học sơ bài ngày mai.
 - Việc họ cố làm xong (`động từ + đối tượng + bối cảnh`, không có chữ AI): Nắm chắc khái niệm cốt lõi và tự giải thích lại được kiến thức sau khi xem video pre-class để làm đúng bài thực hành và bài kiểm tra trước khi lên lớp.
 - Hôm nay họ giải bằng gì, hỏng ở đâu, vì sao chưa bỏ: Xem lại/tua video, đọc slide, hoặc hỏi nhanh công cụ chat/trợ giảng. Hỏng ở chỗ việc xem và hỏi đáp thụ động không ép người học tự diễn đạt lại bằng lời của mình nên dễ "tưởng đã hiểu", đến lúc vào kiểm tra hoặc làm lab mới vướng. Chưa bỏ vì đây là quy trình bắt buộc trên LMS/pre-class để mở tiến độ học.
 - Pain (KHÔNG chữ AI): Học viên L3 đi làm ban ngày, tối tự học trên pre-class thường chỉ xem video một chiều và ít tự diễn đạt lại kiến thức, nên không nhận ra chỗ hiểu sai cho đến khi làm bài kiểm tra cuối ngày.
@@ -40,6 +40,7 @@ Data BTC cấp đã dùng (nếu có — không commit nguyên file): `data/prec
 
 ## §4. Thiết kế *(guide 2.2, 3.2)*
 - **Lát cắt MỘT CÂU**: Một học viên L3 · tự học xong một đoạn bài trên pre-class · AI chọn đưa bạn học hỏi sai để học viên giảng lại, hoặc gọi trợ giảng sửa lỗi kèm mã đoạn · học viên tự giải thích đúng và qua được câu kiểm tra ngay sau đó.
+- **Bối cảnh vận hành (cầu nối sau buổi học → trước bài ngày mai):** Khi học viên mở PreClass để chuẩn bị sang bài hôm sau, Bạn học AI chủ động mở lời trước (*"Alo, cứu tớ bài hôm nay trên lớp với..."*) kéo học viên vào vai người đi dạy; nếu học viên hỏi ngược lại (*"Cậu muốn tớ giảng lại phần nào?"*), Bạn học AI nêu rõ chỗ vướng cụ thể (*"Phần ... nghĩa là sao?"*) rồi chuyển sang chu trình phản biện → Trợ giảng sửa sai kèm `[mã đoạn]` → Chốt câu kiểm tra trước khi qua bài ngày mai.
 - Không làm (≥3 điều):
   1. Không tích hợp hay ghi dữ liệu vào hệ thống `preclass-online.com` thật.
   2. Không sinh video/audio bài giảng mới.
@@ -144,6 +145,7 @@ flowchart TD
 | Thời điểm | Đổi gì | Vì sao (trỏ về câu thử / lỗi / bằng chứng nào) |
 |---|---|---|
 | 27/11 18:50 | Đồng bộ `spec.md` (§4, §9), `README.md`, `AGENTS.md`, `DATA_CARD.md`, `eval/README.md` và nhánh `no_data` trong `agent.py` theo bản `main` đã merge PR #1 & #2 (`11` đoạn bài học, tên hàm thật trong `tools.py`, Handoff Allowlist, `_output_guardrail`, kết quả nối thử `claude-haiku-5-5`); giữ nguyên §7 & `eval/metric_spec.yaml` | Sau khi hợp nhất PR #1 (`data/lessons.json` tăng lên 11 đoạn, sửa `tools.py`/`app.py`) và PR #2 (`eval/README.md`), cập nhật tài liệu khớp 100% với code chạy thật trước chặng CP3 |
+| 28/11 01:10 | Bổ sung Web UI (`codebase/ui.html` + `app.py` dùng `ThreadingHTTPServer`, giữ cờ `--cli`), bổ sung lời chào chủ động của Bạn học AI ("Alo, cứu tớ..."), thanh tiến độ 3 bước sau giờ học và xử lý câu hỏi ngược `"Cậu muốn tớ giảng lại phần nào?"` trong `codebase/agent.py` + làm rõ bối cảnh §0, §4 (không chạm §7, `metric_spec.yaml`, `benchmark.csv`) | `evidence/summary.md` cho thấy cách bạn học AI xen ngang giữa video chỉ đạt `151/13.975 (1.08%)` phản hồi; chuyển sang Bạn học AI chủ động cầu cứu sau giờ học trước khi sang bài ngày mai và hỗ trợ hội thoại mở đầu tự nhiên |
 
 **Sau CP4 (đến 23:59 Thứ Bảy 28/11)** (sửa theo góp ý — không sửa chuẩn "đạt", câu thử, số bằng chứng, kết quả các lượt đã chạy)
 
