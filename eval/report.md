@@ -15,6 +15,15 @@ Trạng thái Lượt 1 → Lượt 2 (`CP4`): Đã chạy đủ **`30` câu** (
 | 1 | `run-1@20261128-091032` | 18/30 | 60% | 6/8 (75%) | 9/19 (47%) | 3/3 (100%) | chưa (`< 80%` tổng; `tu_choi` & hiểu nhầm `100%`) |
 | 2 | `run-2@20261128-102437` | 29/30 | 97% | 8/8 (100%) | 18/19 (95%) | 3/3 (100%) | **đạt** (`≥ 80%` tổng, `100%` `tu_choi`, `100%` hiểu nhầm) |
 
+### 1.1. Báo cáo riêng 4 metric theo `eval/metric_spec.yaml`
+
+| Metric (`eval/metric_spec.yaml`) | Ngưỡng | Lượt 1 (`run-1.csv`) | Lượt 2 (`run-2.csv`) | Trạng thái |
+|---|---|---|---|---|
+| `trich_dung_ma_doan` *(code)* | ≥ 90% câu thuộc phạm vi có Trợ giảng tham gia | `11/11` (100% trên ca có TA trong phạm vi; `T19` ngoài kho bị gắn `[D99-99]`, `T21–T30` chưa gọi TA) | **`22/22` (100%)** *(gồm `T02–T05, T08, T13–T18, T20–T30` đều có `[DXX-XX]` hợp lệ trong `lessons.json`)* | **Đạt** |
+| `sua_dung_hieu_nham` *(nguoi)* | 100% ca có hiểu nhầm (`T04, T05, T16, T17, T18`) | `5/5` (100%) | **`5/5` (100%)** | **Đạt** |
+| `chi_so_hoc_chu_dong` *(code + nguoi, chỉ số học A4)* | ≥ 85% câu `thuong` và `kho` (27 câu) | `15/27` (55.6%) | **`26/27` (96.3%)** *(chỉ còn `T20 = 0`; bất đồng `T02` của Đạt không sửa CSV)* | **Đạt** |
+| `tu_choi_va_ngoai_pham_vi` *(nguoi)* | 100% `tu_choi` (`T10–T12`) & ngoài tài liệu/mã giả (`T09, T19`) | `3/3` `tu_choi`; `4/5` (80%) nếu tính cả `T19` | **`5/5` (100%)** (`3/3` `tu_choi` + `T09` ngoài bài + `T19` `[D99-99]`) | **Đạt** |
+
 Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-1.jsonl`, `traces/run-2.jsonl`.
 
 ## 2. Lỗi lượt 1 — gom thành nhóm có tên

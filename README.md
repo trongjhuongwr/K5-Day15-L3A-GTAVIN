@@ -91,5 +91,5 @@ Nhóm dùng trợ lý lập trình AI để rà cấu trúc repo, hỗ trợ vi�
 | 4 | Bản chạy thử làm trọn lát cắt | `codebase/` · lệnh ở mục "Lệnh" |
 | 5 | Định nghĩa "tốt" + bộ câu thử | `data/DATA_CARD.md` · `eval/` |
 | 6 | Mô phỏng chi phí khi dùng thật | `cost/` |
-| 7 | Slide + demo + video dự phòng | `demo-slides.pdf` ở thư mục gốc · link video: *(cập nhật CP4)* |
+| 7 | Slide + demo + video dự phòng | `demo-slides.pdf` ở thư mục gốc (`slides/slides.html`) · đã nộp video dự phòng qua Form CP3/CP4 |
 | + | *Bonus:* người dùng thử | `validation/log.md` |

@@ -1,4 +1,4 @@
-# AI SPEC — Lớp học AI chủ động "Học bằng cách dạy lại" (A4) · Nhóm GTA VIN · Phòng H209 *(dự kiến)* · Zone ____
+# AI SPEC — Lớp học AI chủ động "Học bằng cách dạy lại" (A4) · Nhóm GTA VIN · Lớp L3A · Phòng H209 *(khu vực nhóm A4)*
 
 > Mốc nộp: §7 chốt chuẩn "đạt" tại **CP2 19:30 Thứ Sáu 27/11** · §0–§7 nộp **CP3 10:00 Thứ Bảy 28/11** · đủ §0–§10 **CP4 14:30 Thứ Bảy 28/11** · §10 changelog ghi tiếp đến **23:59 Thứ Bảy 28/11**.
 
@@ -92,7 +92,7 @@ flowchart TD
   | **G8 — Dễ bỏ qua / chuyển hướng** | Trong giao diện `codebase/app.py`, người học gõ `/ds`, `/chon DXX-XX`, `/reset` để chuyển đoạn hoặc làm mới ngữ cảnh bất cứ lúc nào. |
 
 - Phần nào còn giả (công cụ trả dữ liệu giả, model chế độ giả…) — ghi rõ, không giả làm thật:
-  - Kho bài học `data/lessons.json` gồm **11 đoạn** khái niệm cốt lõi (`D01-01` → `D11-01`) do nhóm tự tóm tắt cô đọng theo đề cương AI20K L3 (không dùng nguyên slide/transcript khoá). Về model, trước CP2 dùng nhánh `fake` để thông luồng; đến `18:10` ngày `27/11` đã nối và chạy thử thành công API Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`) qua `py run.py eval --try` (`3/3` câu đầu có token thật `> 0`), chờ chạy toàn bộ bộ câu thử (20–30 câu) ở chặng CP3.
+  - Kho bài học `data/lessons.json` gồm **11 đoạn** khái niệm cốt lõi (`D01-01` → `D11-01`) do nhóm tự tóm tắt cô đọng theo đề cương AI20K L3 (không dùng nguyên slide/transcript khoá). Về model, trước CP2 dùng nhánh `fake` để thông luồng; từ CP3 đến CP4 đã nối và chạy đủ API thật Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`) cho cả 30 câu ở Lượt 1 (`eval/run-1.csv`), Lượt 2 (`eval/run-2.csv`), 50 phiên mô phỏng (`cost/simulate-1.csv`) và demo trực tiếp trên Web UI (`py run.py`); nhánh `fake` chỉ còn làm dự phòng kiểm thử cục bộ khi không có `.env`.
 
 ## §5. Chỗ khó — 4 lớp + ≥6 kịch bản + 2 tấn công *(guide 2.3)*
 
@@ -148,9 +148,12 @@ flowchart TD
 | 28/11 01:10 | Bổ sung Web UI (`codebase/ui.html` + `app.py` dùng `ThreadingHTTPServer`, giữ cờ `--cli`), bổ sung lời chào chủ động của Bạn học AI ("Alo, cứu tớ..."), thanh tiến độ 3 bước sau giờ học và xử lý câu hỏi ngược `"Cậu muốn tớ giảng lại phần nào?"` trong `codebase/agent.py` + làm rõ bối cảnh §0, §4 (không chạm §7, `metric_spec.yaml`, `benchmark.csv`) | `evidence/summary.md` cho thấy cách bạn học AI xen ngang giữa video chỉ đạt `151/13.975 (1.08%)` phản hồi; chuyển sang Bạn học AI chủ động cầu cứu sau giờ học trước khi sang bài ngày mai và hỗ trợ hội thoại mở đầu tự nhiên |
 | 28/11 08:48 | Chốt bộ `eval/benchmark.csv` lên `30` câu trước Lượt 1 CP3 (chuyển `T01, T06, T07, T10` sang `tu_viet`, chuyển `T21–T25` sang `nguoi_dung`, bổ sung `T26–T30` từ 5 bài diễn đàn thật Quân đã đối chiếu ở `evidence/data-mining.md` §9 → đạt `10/30 = 33.3% nguoi_dung`) và cập nhật `eval/README.md`, `eval/report.md` | Theo kết luận rà soát nguồn của Quân ở `evidence/data-mining.md` §9 để bảo đảm ≥1/3 nguồn người dùng thật có URL kiểm chứng trước khi chạy `eval/run-1.csv` |
 | 28/11 10:25 | Nâng cấp Lượt 2 trong `codebase/agent.py`: (1) chặn mã không tồn tại trước `ta_no_spoonfeed` (`T19`), (2) thêm `_semantic_director` bằng `Claude Haiku 5.5` phân loại ý định & từ đồng nghĩa (`paraphrased_pass`, `grounded_qa`, `misconception`, `partial_explanation`) kèm nhánh `ta_grounded_qa` nói rõ giới hạn tài liệu, (3) siết `SYSTEM_TA` tối đa 5 câu tránh chạm `max_tokens=1024` (`T16`) | Lượt 1 (`run-1@20261128-091032`, `18/30 = 60%`) lộ 3 nhóm lỗi thật: `T19` gắn `[D99-99]` giả (`FM-01/04`), `T20` trượt đồng nghĩa (`FM-03`), và `T21`–`T30` câu hỏi kỹ thuật bị đẩy sang Bạn học AI thay vì Trợ giảng AI (`FM-03/01`) |
+| 28/11 10:35 | Chạy 50 phiên mô phỏng `cost/simulate-1.csv` (`seed=42`, `--rate-from eval/run-2.csv`), cập nhật `cost/cost-estimate.md` và `spec.md` §8 (`10850fd`) | Hoàn tất báo cáo kinh tế vận hành R6 trước CP4 (`$0.00031/task`, `$2.47/tháng` cho 700 người) |
+| 28/11 12:58 | Hợp nhất kết quả chấm chéo `4/5 (0/1/1/1/1)` của Đạt trong `eval/README.md`, `eval/report.md`, `docs/ai-usage.md` và thêm `reflection/lethanhdat.md` (`86316fe`) | Đáp ứng tiêu chí người chấm thứ hai khớp `≥4/5` trong R4 và giữ lại bất đồng trung thực ở `T02` |
+| 28/11 13:38 | Tạo `slides/slides.html`, xuất `demo-slides.pdf` (4 trang gọn chữ tại root), cập nhật `slides/outline.md` và thêm `reflection/nguyentronghuong.md` (`4673012`) | Hoàn tất 4 điều kiện cứng CP4 & R7 trước giờ nộp 14:30 |
 
 **Sau CP4 (đến 23:59 Thứ Bảy 28/11)** (sửa theo góp ý — không sửa chuẩn "đạt", câu thử, số bằng chứng, kết quả các lượt đã chạy)
 
 | Thời điểm | Đổi gì | Vì sao |
 |---|---|---|
-| | | |
+| 28/11 18:52 | Bổ sung bảng kết quả riêng cho 4 metric trong `eval/report.md` §1.1 (tính từ `eval/run-1.csv` và `eval/run-2.csv`, không sửa CSV), đồng bộ trạng thái CP4 trong `spec.md` §4, `README.md` và `docs/ai-usage.md` | Bảo đảm khớp quy ước tự đặt tại `eval/README.md` ("báo cáo riêng từng metric theo `metric_spec.yaml`") và dọn các ghi chú còn ở thì tương lai trước hạn khóa repo 23:59 |
