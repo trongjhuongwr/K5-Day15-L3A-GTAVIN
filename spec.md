@@ -123,10 +123,10 @@ flowchart TD
 - Kết quả: lượt 1 `18/30 (60%)` · lượt 2 `29/30 (97%)` — run ID: `run-1@20261128-091032` / `run-2@20261128-102437` → chi tiết `eval/report.md`, hồ sơ `eval/README.md`
 
 ## §8. Chi phí khi dùng thật *(guide 4.2)*
-- Persona + giá: `cost/personas.yaml` · lượt mô phỏng: `cost/simulate-__.csv` (__ phiên)
-- Chi phí / task thành công: __ (model __) · __ (model __)
-- Chi phí / tháng ở quy mô thật: thấp __ · cơ sở __ · cao __ → chi tiết `cost/cost-estimate.md`
-- So với impact / người / tháng (§2): đáng làm không, vì sao:
+- Persona + giá: `cost/personas.yaml` · lượt mô phỏng: `cost/simulate-1.csv` (`50` phiên, `0/50` lỗi, tỉ lệ đạt `29/30 = 97%` từ `eval/run-2.csv`)
+- Chi phí / task thành công: **`$0.00031`** (`claude-haiku-5-5`) · **`$0.0062`** (`claude-sonnet-5-5`, đo token trên Haiku 5.5)
+- Chi phí / tháng ở quy mô thật (`claude-haiku-5-5`): thấp **`$1.06`** (`300` người) · cơ sở **`$2.47`** (`700` người, **`$0.0035/người/tháng`**) · cao **`$3.53`** (`1.000` người) → chi tiết `cost/cost-estimate.md`
+- So với impact / người / tháng (§2): **rất đáng làm** — chi phí cơ sở chỉ `$0.0035/người/tháng` để giảm phần lãng phí ước tính `140` phút học lại/người/tháng (cổng chặn trước model giúp `0` token ở các ca ngắn/tấn công); kể cả chỉ tiết kiệm `10` phút/người/tháng thì chi phí hòa vốn cũng chỉ `~$0.021/giờ`.
 
 ## §9. Rủi ro & an toàn
 - Dữ liệu: `data/preclass/` đã được BTC ẩn danh hoàn toàn; repo nhóm chỉ lưu script đếm và mã dòng mẫu; dữ liệu chạy thử `data/lessons.json` do nhóm tự biên soạn ngắn gọn; khi gửi lên model không chứa dữ liệu cá nhân thật của bất kỳ học viên nào.
