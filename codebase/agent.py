@@ -4,6 +4,7 @@ Khớp sơ đồ thiết kế trong spec.md §4 gồm 3 vai tách biệt:
   2. Classmate Confused (bạn học AI hay hiểu sai): KHÔNG được cấp đáp án chuẩn; hỏi vặn lại để học viên tự giải thích.
   3. Teaching Assistant (trợ giảng AI): giữ quyền đọc tài liệu, bắt buộc sửa hiểu nhầm kèm [mã đoạn] và chốt câu kiểm tra.
 """
+import json
 import re
 
 from ai import call_model
@@ -32,10 +33,22 @@ SYSTEM_CLASSMATE = (
 SYSTEM_TA = (
     "Bạn là [Trợ giảng AI - theo tài liệu] của khoá AI20K. "
     "Quy tắc bắt buộc: "
-    "(1) Chỉ dựa vào ĐOẠN TÀI LIỆU được cung cấp, KHÔNG tự bịa kiến thức ngoài tài liệu; "
+    "(1) Chỉ dựa vào ĐOẠN TÀI LIỆU được cung cấp, KHÔNG tự bịa kiến thức, tên hàm, tham số API hay phương pháp ngoài tài liệu; "
     "(2) Mọi giải thích hoặc sửa lỗi BẮT BUỘC ghi rõ mã đoạn dạng [DXX-XX]; "
     "(3) Không đưa đáp án hoàn chỉnh khi học viên xin chép nhanh, không chấm điểm chính thức; "
-    "(4) Luôn giữ giọng tôn trọng, khích lệ và kết thúc bằng 1 hành động tiếp theo cho học viên (tối đa 6 câu)."
+    "(4) Luôn giữ giọng tôn trọng, súc tích (tối đa 5 câu ngắn gọn) và kết thúc bằng 1 hành động hoặc câu hỏi dẫn cho học viên."
+)
+
+SYSTEM_DIRECTOR = (
+    "Bạn là Bộ điều phối (Director) phân loại ý định học viên lớp AI20K. "
+    "Chỉ trả về đúng 1 JSON hợp lệ (không markdown, không giải thích thêm) với 3 khóa:\n"
+    '{"intent": "partial_explanation|paraphrased_pass|grounded_qa|misconception", '
+    '"matched_points": ["..."], "reason": "ngắn gọn 1 câu"}\n'
+    "Quy tắc chọn intent:\n"
+    '- "paraphrased_pass": Học viên ĐANG KHẲNG ĐỊNH / GIẢI THÍCH khái niệm của đoạn bài và đã diễn đạt đúng >=50% ý cốt lõi (kể cả bằng từ đồng nghĩa, vd "số lần chạy tối đa"=MAX_STEPS, "tiêu hao ngân sách"=chi phí token, "đứng im"=treo).\n'
+    '- "grounded_qa": Học viên ĐANG ĐẶT CÂU HỎI tìm hiểu cơ chế, cách làm, tham số API/thư viện, so sánh framework hoặc hỏi "làm sao/có cách nào/nếu...thì có..." thay vì tự tóm tắt lại bài.\n'
+    '- "misconception": Học viên khẳng định hoặc đồng tình với hiểu nhầm phổ biến của đoạn.\n'
+    '- "partial_explanation": Học viên đang tự trình bày hiểu biết của mình ("Mình hiểu là...", "Theo mình...") nhưng mới nêu <50% ý cốt lõi (vd chỉ nêu 1 ý và hỏi "vậy đã đủ chưa?").'
 )
 
 
@@ -100,11 +113,40 @@ def _is_peer_prompt_back(text: str) -> bool:
     return any(cue in q for cue in _PEER_PROMPT_BACK_CUES)
 
 
+def _semantic_director(code: str, passage: dict, user_text: str, check_res: dict) -> dict:
+    """CP4 Lượt 2: Phân loại ngữ nghĩa bằng model cho ca substantive chưa khớp từ khóa cứng."""
+    prompt = (
+        f"Đoạn [{code}] — Chủ đề: {passage.get('topic', '')}\n"
+        f"Nội dung chuẩn: {passage.get('content', '')}\n"
+        f"Ý cốt lõi: {', '.join(passage.get('key_points', []))}\n"
+        f"Hiểu nhầm phổ biến: {passage.get('misconception', '')}\n"
+        f"Từ khóa cứng đã khớp: {check_res.get('matched', [])}\n"
+        f"Câu học viên nhập: {user_text}"
+    )
+    reply = call_model(SYSTEM_DIRECTOR, prompt)
+    raw = (reply.get("text") or "").strip()
+    m = re.search(r"\{.*\}", raw, re.DOTALL)
+    if not m:
+        return {"intent": "partial_explanation", "matched_points": [], "reason": "fallback rule-based"}
+    try:
+        parsed = json.loads(m.group(0))
+        intent = parsed.get("intent", "partial_explanation")
+        if intent not in ("partial_explanation", "paraphrased_pass", "grounded_qa", "misconception"):
+            intent = "partial_explanation"
+        matched = parsed.get("matched_points") or []
+        if not isinstance(matched, list):
+            matched = []
+        return {"intent": intent, "matched_points": [str(x) for x in matched], "reason": str(parsed.get("reason", ""))}
+    except Exception:
+        return {"intent": "partial_explanation", "matched_points": [], "reason": "fallback json"}
+
+
 def answer(text: str) -> dict:
     # Bước 1: Xác định đoạn bài học liên quan qua công cụ chỉ đọc (hoặc rỗng nếu ngoài tài liệu)
-    code = extract_code(text)
+    explicit_code = extract_code(text)
+    code = explicit_code
     passage = get_passage(code) if code else {}
-    if not passage:
+    if not explicit_code and not passage:
         found = search_lesson(text)
         if found:
             passage = found[0]
@@ -114,7 +156,7 @@ def answer(text: str) -> dict:
     assessment = assess_learner_input(code, text)
     peer_prompt_back = _is_peer_prompt_back(text)
 
-    if assessment["status"] == "no_data" and peer_prompt_back:
+    if assessment["status"] == "no_data" and peer_prompt_back and not explicit_code:
         lessons = _load_lessons()
         if lessons:
             passage = next((it for it in lessons if it.get("code") == "D03-01"), lessons[0])
@@ -129,6 +171,10 @@ def answer(text: str) -> dict:
             route = "no_data"
             check_res = {"passed": False, "matched": [], "missing": [], "ratio": 0.0}
             note("director -> no_data (teaching_assistant): kho bài học rỗng")
+    elif explicit_code and not passage and assessment["status"] not in ("attack", "out_of_scope_auth"):
+        route = "no_data"
+        check_res = {"passed": False, "matched": [], "missing": [], "ratio": 0.0}
+        note(f"director -> no_data (teaching_assistant): mã [{explicit_code}] không tồn tại trong data/lessons.json")
     else:
         check_res = check_answer(code, text) if code and assessment["status"] == "substantive" else {
             "passed": False, "matched": [], "missing": [], "ratio": 0.0
@@ -136,6 +182,24 @@ def answer(text: str) -> dict:
         decision = next_speaker(assessment, check_res)
         route = decision["route"]
         note(f"director -> {route} ({decision['agent']}): {decision['reason']}")
+
+    # Nâng cấp Lượt 2: Semantic Director cho ca substantive chưa đạt từ khóa cứng (trừ hỏi ngược)
+    if route == "classmate_challenge" and not peer_prompt_back and passage:
+        sem = _semantic_director(code, passage, text, check_res)
+        sem_intent = sem["intent"]
+        note(f"semantic_director intent={sem_intent} code={code}: {sem['reason']}")
+        if sem_intent == "paraphrased_pass":
+            kps = passage.get("key_points", [])
+            matched = sem["matched_points"] or kps
+            check_res = {"passed": True, "matched": matched, "missing": [], "ratio": 1.0}
+            route = "quiz_pass"
+            note(f"director -> quiz_pass (teaching_assistant): đồng nghĩa đạt ý cốt lõi [{code}]")
+        elif sem_intent == "grounded_qa":
+            route = "ta_grounded_qa"
+            note(f"director -> ta_grounded_qa (teaching_assistant): câu hỏi kỹ thuật cần đối chiếu tài liệu [{code}]")
+        elif sem_intent == "misconception":
+            route = "ta_fix"
+            note(f"director -> ta_fix (teaching_assistant): phát hiện hiểu nhầm theo ngữ nghĩa [{code}]")
 
     # Nhánh chặn an toàn / thu hẹp phạm vi (G10) — xử lý dứt khoát trước khi gọi model
     if route == "refuse_attack":
@@ -169,11 +233,17 @@ def answer(text: str) -> dict:
     if route == "no_data":
         lessons = _load_lessons()
         topics_str = ", ".join(f"[{it.get('code', '')}] {it.get('topic', '')}" for it in lessons)
+        missing_msg = (
+            f"Mã đoạn [{explicit_code}] không tồn tại trong tài liệu bài học hiện tại của hệ thống "
+            "(nên không thể đưa đáp án hay gợi ý từ mã này). "
+            if explicit_code and not passage else
+            "Nội dung này không có trong tài liệu bài học hiện tại của hệ thống. "
+        )
         return {
             "output": (
-                "[Trợ giảng AI - theo tài liệu] Nội dung này không có trong tài liệu bài học hiện tại của hệ thống. "
+                f"[Trợ giảng AI - theo tài liệu] {missing_msg}"
                 f"Hiện kho bài học có {len(lessons)} đoạn: {topics_str}. "
-                "Bạn muốn ôn lại đoạn nào?"
+                "Bạn muốn chọn lại đoạn nào?"
             )
         }
 
@@ -213,7 +283,7 @@ def answer(text: str) -> dict:
             out = "[Bạn học AI - có thể hiểu sai] " + out
         return {"output": out}
 
-    # Các nhánh do Teaching Assistant xử lý: ta_fix, ta_no_spoonfeed, quiz_pass
+    # Các nhánh do Teaching Assistant xử lý: ta_fix, ta_no_spoonfeed, ta_grounded_qa, quiz_pass
     if route == "ta_fix":
         task = (
             "Học viên vừa nêu hoặc đồng tình với một hiểu nhầm phổ biến. "
@@ -226,11 +296,21 @@ def answer(text: str) -> dict:
             f"Hãy từ chối đưa đáp án hoàn chỉnh, chỉ gợi ý 1 hướng suy nghĩ từ [{code}] "
             f"và đặt lại câu hỏi kiểm tra: {passage.get('check_question', '')}"
         )
+    elif route == "ta_grounded_qa":
+        task = (
+            f"Học viên đang đặt câu hỏi kỹ thuật liên quan đến [{code}]. "
+            f"Hãy trả lời bám sát ĐOẠN TÀI LIỆU chuẩn và luôn trích mã [{code}]: "
+            "(1) Nếu câu hỏi đề cập tham số API cụ thể, tên thư viện/framework hoặc phương pháp thống kê "
+            "(tool_choice, tool_calls rỗng, LangChain/langgraph-supervisor, lưu ID cuộc chat, cross-validation, mẹo chống leak prompt...) "
+            "mà đoạn tài liệu chuẩn KHÔNG mô tả, BẮT BUỘC nói rõ 'tài liệu hiện tại chưa mô tả chi tiết phần này' "
+            "và KHÔNG tự bịa cơ chế API/thư viện hay khẳng định phương pháp thống kê; "
+            f"(2) Giải thích đúng phần nguyên lý có thật trong [{code}] và gợi ý 1 câu hỏi dẫn để học viên tự ôn."
+        )
     else:  # quiz_pass
         task = (
-            f"Học viên đã giải thích đúng phần lớn ý cốt lõi của [{code}] (khớp: {check_res.get('matched', [])}). "
-            f"Hãy xác nhận ngắn gọn kèm mã [{code}], bổ sung nhanh ý còn thiếu (nếu có: {check_res.get('missing', [])}), "
-            f"và đưa câu kiểm tra cuối đoạn để chốt hiểu: {passage.get('check_question', '')}"
+            f"Học viên đã giải thích đúng các ý cốt lõi của [{code}] (khớp: {check_res.get('matched', [])}). "
+            f"Hãy xác nhận ngắn gọn kèm mã [{code}], KHÔNG hỏi lặp lại chính những ý học viên vừa giải thích đúng; "
+            f"chỉ bổ sung nhanh ý thiếu (nếu có: {check_res.get('missing', [])}) và đưa 1 câu hỏi đào sâu hoặc câu kiểm tra: {passage.get('check_question', '')}"
         )
 
     user_prompt = (
