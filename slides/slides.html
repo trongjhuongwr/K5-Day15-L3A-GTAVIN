@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GTA VIN (L3A) · Thuyết trình Demo</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+    background: #f8fafc;
+  }
+
+  @media screen {
+    body {
+      background: #1e293b;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 0 84px; gap: 28px;
+    }
+    .slide {
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+    }
+    body.present-mode { padding: 0; gap: 0; justify-content: center; overflow: hidden; height: 100vh; }
+    body.present-mode .slide { display: none; border-radius: 0; }
+    body.present-mode .slide.active { display: flex; }
+    .nav {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; align-items: center; gap: 8px;
+      background: #0f172a; color: #f8fafc; padding: 8px 16px; border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35); font-size: 13px;
+    }
+    .nav button {
+      background: #1e293b; color: #f8fafc; border: 1px solid #334155;
+      border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 12px;
+    }
+    .nav button:hover { background: #334155; }
+  }
+  @media print {
+    .nav { display: none !important; }
+    .slide { display: flex !important; box-shadow: none !important; border-radius: 0 !important; }
+  }
+
+  .slide {
+    width: 1280px; height: 720px;
+    padding: 44px 60px 32px;
+    background: #f8fafc;
+    display: flex; flex-direction: column;
+    position: relative;
+    page-break-after: always; break-after: page;
+    overflow: hidden;
+  }
+  .slide:last-of-type { page-break-after: auto; break-after: auto; }
+
+  /* Header */
+  .head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #2563eb; margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 25.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;
+    margin: 0; color: #0f172a; max-width: 960px;
+  }
+  .meta-right {
+    text-align: right; font-size: 12px; color: #64748b; line-height: 1.5; white-space: nowrap;
+  }
+
+  /* Surfaces */
+  .panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .panel-dark {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 12px;
+    padding: 22px 28px;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid-55-45 { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 22px; }
+  .grid-45-55 { display: grid; grid-template-columns: 0.88fr 1.12fr; gap: 22px; }
+
+  .num-xl { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+  .num-lg { font-size: 34px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.05; }
+
+  h2 { font-size: 16px; font-weight: 700; margin: 0 0 10px; color: #0f172a; }
+  p { font-size: 14px; line-height: 1.5; color: #334155; margin: 0; }
+  .muted { font-size: 12.5px; color: #64748b; line-height: 1.45; }
+
+  .badge {
+    display: inline-block; font-size: 11.5px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .b-blue { background: #dbeafe; color: #1d4ed8; }
+  .b-green { background: #dcfce7; color: #15803d; }
+  .b-gray { background: #f1f5f9; color: #475569; }
+
+  /* Clean stat row */
+  .stat-row {
+    display: flex; align-items: center; gap: 18px;
+    padding: 13px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .stat-row:first-child { padding-top: 0; }
+  .stat-val {
+    min-width: 108px; font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
+  }
+
+  /* Footer */
+  .foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11.5px; color: #64748b;
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button onclick="toggleMode()">Toàn trang (P)</button>
+  <button onclick="step(-1)">← Trước</button>
+  <span id="counter" style="min-width:44px; text-align:center;">1 / 4</span>
+  <button onclick="step(1)">Sau →</button>
+  <button onclick="window.print()">In / PDF</button>
+</div>
+
+<!-- =========================================================
+     SLIDE 1: VẤN ĐỀ & VÌ SAO CHỌN A4
+========================================================= -->
+<section class="slide active">
+  <div class="head">
+    <div>
+      <div class="kicker">1 · Vấn đề thật &amp; Bài toán đáng làm · Nhóm GTA VIN (L3A)</div>
+      <h1>Học viên L3 tự học thụ động, bỏ qua bạn học AI — mất ~1.017 giờ/tháng</h1>
+    </div>
+    <div class="meta-right">Track A · Hướng A4<br/>Nguồn: evidence/summary.md · spec.md §2</div>
+  </div>
+
+  <!-- Top Context Strip -->
+  <div class="panel" style="padding: 15px 24px; margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; gap:24px; border-left:4px solid #2563eb;">
+    <div>
+      <span class="badge b-blue" style="margin-bottom:4px;">436 / 721 học viên hoạt động · PreClass (05–25/11/2026)</span>
+      <p style="font-size:14.5px; margin-top:4px;">
+        Học viên L3 đi làm ban ngày, tối tự học thường chỉ xem video một chiều, ít tự giải thích lại kiến thức nên <strong>chỉ phát hiện mình hiểu sai khi làm bài kiểm tra cuối ngày</strong>.
+      </p>
+    </div>
+    <div style="text-align:right; min-width:230px; border-left:1px solid #e2e8f0; padding-left:20px;">
+      <div class="muted" style="font-weight:600;">Impact chọn hướng A4</div>
+      <div class="num-lg" style="color:#059669; margin:2px 0;">61.040 phút</div>
+      <div class="muted">436 HV × 14 lượt/tháng × 10 phút <em>(ước tính)</em></div>
+    </div>
+  </div>
+
+  <!-- Main 2 Columns -->
+  <div class="grid-55-45" style="flex:1; align-items:stretch;">
+    <!-- Left: 3 Clear Stats -->
+    <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div>
+        <h2>3 dấu hiệu từ dữ liệu thật PreClass (evidence/count.py)</h2>
+        <div class="stat-row">
+          <div class="stat-val" style="color:#e11d48;">1.08%</div>
+          <div>
+            <p style="font-weight:600;">Phản hồi bạn học AI cũ khi AI xen ngang</p>
+            <div class="muted">Chỉ 151 / 13.975 lượt hiển thị được trả lời, dù AI xen vào 50.6% đoạn.</div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-val" style="color:#d97706;">74.3%</div>
+          <div>
+            <p style="font-weight:600;">Tin nhắn chưa giúp học viên tạo ý mới</p>
+            <div class="muted">909 / 1.223 câu không sinh ý mới; 70.4% câu AI thiếu trích dẫn bài học.</div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-val" style="color:#2563eb;">89.6%</div>
+          <div>
+            <p style="font-weight:600;">Học viên sai ngay lần đầu bài kiểm tra</p>
+            <div class="muted">69 / 77 người từng sai ở lần thử đầu; 22.5% bỏ qua phần mini-lab.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#334155;">
+        <strong>Ví dụ ẩn danh:</strong> Ca <strong>C01056</strong> hỏi chỉ 2 ký tự → AI trả lời lạc bài (nhóm câu ≤15 ký tự lạc bài tới 58.3%). Ca <strong>A00611</strong> sai ngay câu kiểm tra đầu cuối ngày.
+      </div>
+    </div>
+
+    <!-- Right: Clean Choice Comparison -->
+    <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div>
+        <h2>Vì sao chọn hướng A4 (Học bằng cách dạy lại)?</h2>
+        <p class="muted" style="margin-bottom:14px;">So sánh 3 phương án theo số phút học lại tiết kiệm mỗi tháng (R2):</p>
+
+        <!-- Clean SVG Bar Visual -->
+        <svg viewBox="0 0 440 215" width="100%" height="215" xmlns="http://www.w3.org/2000/svg" style="font-family:Segoe UI,sans-serif;">
+          <!-- A4 -->
+          <rect x="0" y="0" width="440" height="72" rx="10" fill="#f0fdf4" stroke="#86efac"/>
+          <text x="14" y="23" font-size="13.5" font-weight="700" fill="#166534">A4 · Dạy lại Bạn học AI — CHỌN</text>
+          <text x="426" y="23" text-anchor="end" font-size="13.5" font-weight="800" fill="#15803d">~61.040 phút</text>
+          <rect x="14" y="34" width="320" height="10" rx="5" fill="#16a34a"/>
+          <text x="14" y="60" font-size="11.5" fill="#166534">Tác động cả 436 HV, giải quyết gốc rễ 74.3% thiếu tự diễn đạt</text>
+
+          <!-- A1 -->
+          <rect x="0" y="84" width="440" height="58" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+          <text x="14" y="106" font-size="13" font-weight="600" fill="#334155">A1 · Trợ giảng hỏi đáp — Loại</text>
+          <text x="426" y="106" text-anchor="end" font-size="12.5" font-weight="700" fill="#64748b">~9.425 phút</text>
+          <rect x="14" y="116" width="52" height="8" rx="4" fill="#94a3b8"/>
+          <text x="74" y="124" font-size="11.5" fill="#64748b">Chỉ giúp nhóm tự bấm chat (145 HV), vẫn thụ động</text>
+
+          <!-- A2 -->
+          <rect x="0" y="154" width="440" height="58" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+          <text x="14" y="176" font-size="13" font-weight="600" fill="#334155">A2 · Nhắc lịch trên Discord — Loại</text>
+          <text x="426" y="176" text-anchor="end" font-size="12" font-weight="600" fill="#94a3b8">Chưa chứng minh</text>
+          <text x="14" y="197" font-size="11.5" fill="#64748b">Dữ liệu đào tạo BTC cấp là giả lập, không có pain thật</text>
+        </svg>
+      </div>
+      <div class="muted">Phân tầng dùng thật (429 HV): Ít 51.8% · Vừa 27.1% · Nhiều 21.1% → dùng để mô phỏng chi phí.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Trình bày: Nguyễn Trọng Hưởng · Bộ dữ liệu: data/preclass/ (n=436) · Toàn bộ số đếm kiểm lại qua evidence/count.py</span>
+    <span>Trang 1 / 4</span>
+  </div>
+</section>
+
+<!-- =========================================================
+     SLIDE 2: GIẢI PHÁP & DEMO LIVE
+========================================================= -->
+<section class="slide">
+  <div class="head">
+    <div>
+      <div class="kicker">2 · Giải pháp AI &amp; Demo thực tế · spec.md §4</div>
+      <h1>Tách 3 vai AI để Bạn học hỏi vặn tự nhiên mà không thể lộ đáp án</h1>
+    </div>
+    <div class="meta-right">Model: Claude Haiku 5.5 · Giới hạn 4 bước<br/>Mã nguồn: codebase/agent.py · ui.html</div>
+  </div>
+
+  <!-- 1-sentence story -->
+  <div class="panel-dark" style="padding: 15px 24px; margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+    <p style="color:#f8fafc; font-size:14.5px;">
+      <strong style="color:#60a5fa;">Lát cắt sản phẩm:</strong> Vừa học xong một đoạn bài PreClass → Học viên giảng lại cho Bạn học AI đang hiểu sai, hoặc nhờ Trợ giảng sửa lỗi kèm trích dẫn → Tự giải thích đúng và qua kiểm tra ngay sau đó.
+    </p>
+    <span class="badge b-blue" style="white-space:nowrap;">Không tự chấm điểm LMS</span>
+  </div>
+
+  <!-- Clean 4-Step Flow Diagram -->
+  <div class="panel" style="padding: 18px 22px; margin-bottom: 18px;">
+    <svg viewBox="0 0 1110 146" width="100%" height="146" xmlns="http://www.w3.org/2000/svg" style="font-family:Segoe UI,sans-serif;">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+
+      <!-- Step 1 -->
+      <rect x="2" y="28" width="205" height="90" rx="10" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5"/>
+      <text x="18" y="52" font-size="11" font-weight="700" fill="#be123c">BƯỚC 1 · CHẶN SỚM (0Đ)</text>
+      <text x="18" y="74" font-size="14" font-weight="700" fill="#0f172a">Bộ lọc đầu vào</text>
+      <text x="18" y="94" font-size="12" fill="#475569">Chặn câu cụt ≤15 ký tự,</text>
+      <text x="18" y="109" font-size="12" fill="#475569">mã giả và lệnh giả Admin</text>
+
+      <line x1="207" y1="73" x2="245" y2="73" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arr)"/>
+
+      <!-- Step 2 -->
+      <rect x="247" y="28" width="220" height="90" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <text x="263" y="52" font-size="11" font-weight="700" fill="#1d4ed8">BƯỚC 2 · ĐIỀU PHỐI (AI)</text>
+      <text x="263" y="74" font-size="14" font-weight="700" fill="#0f172a">Điều phối viên (Director)</text>
+      <text x="263" y="94" font-size="12" fill="#475569">Hiểu ý định: giảng thiếu,</text>
+      <text x="263" y="109" font-size="12" fill="#475569">đồng nghĩa, sai hay hỏi thêm</text>
+
+      <path d="M 467 55 L 520 34" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+      <path d="M 467 91 L 520 112" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+      <!-- Step 3A -->
+      <rect x="522" y="4" width="325" height="62" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+      <text x="538" y="26" font-size="13.5" font-weight="700" fill="#92400e">Bạn học AI hiểu sai (BỊ KHÓA ĐÁP ÁN)</text>
+      <text x="538" y="45" font-size="12" fill="#78350f">Chỉ biết chỗ hiểu nhầm &amp; ý còn thiếu → hỏi vặn</text>
+      <text x="538" y="59" font-size="11.5" font-weight="600" fill="#b45309">Không nhìn thấy nội dung đáp án chuẩn</text>
+
+      <!-- Step 3B -->
+      <rect x="522" y="80" width="325" height="62" rx="10" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+      <text x="538" y="102" font-size="13.5" font-weight="700" fill="#065f46">Trợ giảng AI (ĐỌC ĐẦY ĐỦ 11 BÀI HỌC)</text>
+      <text x="538" y="121" font-size="12" fill="#064e3b">Sửa hiểu nhầm &amp; giải đáp câu hỏi chuyên sâu</text>
+      <text x="538" y="135" font-size="11.5" font-weight="600" fill="#047857">Luôn trích mã đoạn [DXX-XX] từ giáo trình</text>
+
+      <path d="M 847 35 L 896 60" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+      <path d="M 847 111 L 896 86" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arr)"/>
+
+      <!-- Step 4 -->
+      <rect x="898" y="28" width="210" height="90" rx="10" fill="#0f172a"/>
+      <text x="914" y="52" font-size="11" font-weight="700" fill="#60a5fa">BƯỚC 4 · HẬU KIỂM</text>
+      <text x="914" y="74" font-size="14" font-weight="700" fill="#ffffff">Kiểm tra &amp; Ghi log</text>
+      <text x="914" y="94" font-size="12" fill="#cbd5e1">Xác minh mọi mã [DXX-XX]</text>
+      <text x="914" y="109" font-size="12" fill="#cbd5e1">Gắn nhãn vai · Lưu trace thật</text>
+    </svg>
+  </div>
+
+  <!-- Bottom 2 Simple Explanations -->
+  <div class="grid-2" style="flex:1;">
+    <div class="panel">
+      <h2>3 quyết định an toàn cốt lõi</h2>
+      <p style="margin-bottom:10px;"><strong>1. Vì sao không dùng 1 AI đóng cả 2 vai?</strong> Nếu một prompt vừa đóng vai bạn học "ngây thơ" vừa giữ sẵn đáp án, khi bị hỏi vặn AI rất dễ tự lộ đáp án.</p>
+      <p style="margin-bottom:10px;"><strong>2. Chỗ chặn rủi ro lớn nhất:</strong> Nếu học viên đồng tình với cái sai, hệ thống ép chuyển sang <strong>Trợ giảng AI</strong> đính chính ngay trước khi kết thúc.</p>
+      <p><strong>3. Giới hạn phạm vi (HAX):</strong> Hỏi ngoài 11 bài học sẽ trả lời "không có trong tài liệu" (G10) và không tự chấm điểm lên LMS.</p>
+    </div>
+
+    <div class="panel" style="border-left:4px solid #059669;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 style="margin:0;">Demo trực tiếp Web UI (py run.py)</h2>
+        <span class="badge b-green">Có chế độ --cli &amp; Video dự phòng</span>
+      </div>
+      <p style="margin-bottom:10px;"><strong>• Kịch bản thường (D03-01):</strong> Bạn học chủ động nhờ giảng → HV giảng thiếu ý → AI hỏi vặn không lộ đáp án → đủ ý → Trợ giảng chốt kèm chip [D03-01] &amp; mở khóa 100%.</p>
+      <p style="margin-bottom:10px;"><strong>• Kịch bản khó &amp; tấn công:</strong> HV tin <em>"temperature=0 là hết bịa đặt"</em> → Trợ giảng bác bỏ kèm [D01-02]; giả Admin đòi đáp án → chặn cứng <strong>0 token</strong>.</p>
+      <p><strong>• Kiểm chứng tại chỗ:</strong> Bật ngăn <strong>X-Ray</strong> xem trace thật &amp; mời Giám khảo nhập trực tiếp <strong>1 câu thử lạ</strong>.</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Trình bày: Nguyễn Trọng Hưởng · 5 công cụ chỉ đọc (tools.py) · Mất mạng hội trường → bật ngay video Drive đã kiểm Tab Ẩn Danh</span>
+    <span>Trang 2 / 4</span>
+  </div>
+</section>
+
+<!-- =========================================================
+     SLIDE 3: ĐÁNH GIÁ THỰC NGHIỆM (60% -> 97%)
+========================================================= -->
+<section class="slide">
+  <div class="head">
+    <div>
+      <div class="kicker">3 · Bộ câu thử &amp; Kết quả đánh giá (R4 + R5) · eval/report.md</div>
+      <h1>30 tình huống kiểm thử: Vượt chuẩn đạt sau 1 lần sửa (60% → 97%)</h1>
+    </div>
+    <div class="meta-right">Model: Claude Haiku 5.5 · 0 lỗi API<br/>Nguồn: eval/README.md · eval/run-1,2.csv</div>
+  </div>
+
+  <div class="grid-45-55" style="flex:1; align-items:stretch;">
+    <!-- Left: Big Clear Before/After Visual -->
+    <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div>
+        <h2>Kết quả Lượt 1 → Lượt 2 trên cùng 30 câu</h2>
+        <p class="muted" style="margin-bottom:18px;">Gồm 8 câu thường, 19 câu khó, 3 câu từ chối tấn công (<strong>10/30 = 33.3% lấy từ câu hỏi thật</strong> trên diễn đàn AI).</p>
+
+        <!-- Clean Horizontal Comparison Bars -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px;">
+            <span><strong>Lượt 1</strong> (Chặn theo từ khóa cứng)</span>
+            <strong style="color:#d97706;">18 / 30 (60%)</strong>
+          </div>
+          <div style="height:18px; background:#f1f5f9; border-radius:9px; overflow:hidden; position:relative;">
+            <div style="width:60%; height:100%; background:#f59e0b; border-radius:9px;"></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:6px;">
+            <span><strong>Lượt 2</strong> (Sau 1 lần cải tiến)</span>
+            <strong style="color:#059669;">29 / 30 (97%) · Vượt ngưỡng 80%</strong>
+          </div>
+          <div style="height:18px; background:#f1f5f9; border-radius:9px; overflow:hidden; position:relative;">
+            <div style="width:97%; height:100%; background:#10b981; border-radius:9px;"></div>
+          </div>
+        </div>
+
+        <!-- 4 Clean Pill Stats -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-top:12px; border-top:1px solid #f1f5f9;">
+          <div style="background:#f8fafc; padding:10px 12px; border-radius:8px;">
+            <div class="muted">Câu thường</div>
+            <div style="font-size:20px; font-weight:800; color:#0f172a;">8 / 8 (100%)</div>
+          </div>
+          <div style="background:#f8fafc; padding:10px 12px; border-radius:8px;">
+            <div class="muted">Câu khó</div>
+            <div style="font-size:20px; font-weight:800; color:#0f172a;">18 / 19 (95%)</div>
+          </div>
+          <div style="background:#f0fdf4; padding:10px 12px; border-radius:8px;">
+            <div class="muted" style="color:#166534;">Chặn tấn công</div>
+            <div style="font-size:20px; font-weight:800; color:#15803d;">3 / 3 (100%)</div>
+          </div>
+          <div style="background:#f0fdf4; padding:10px 12px; border-radius:8px;">
+            <div class="muted" style="color:#166534;">Sửa hiểu nhầm</div>
+            <div style="font-size:20px; font-weight:800; color:#15803d;">5 / 5 (100%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="muted">4 chỉ số chấm khóa từ CP2 (spec.md §7): Trích đúng mã (≥90%) · Sửa hiểu nhầm (100%) · Học chủ động (≥85%) · Từ chối (100%). Không có câu nào tệ đi.</div>
+    </div>
+
+    <!-- Right: Plain Vietnamese Explanation of Fixes & Honest Remaining Failure -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="panel" style="border-left:4px solid #059669;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h2 style="margin:0;">1. Sửa dứt điểm lỗi mã giả [D99-99] (T19)</h2>
+          <span class="badge b-green">1 lỗi → 0 lỗi</span>
+        </div>
+        <p><strong>Lượt 1 sai:</strong> Khi người dùng gõ mã bài không tồn tại để xin đáp án, AI gắn nhầm mã giả vào đầu câu trả lời.</p>
+        <p style="margin-top:4px;"><strong>Cách sửa:</strong> Kiểm tra mã bài có thật trong kho 11 bài ngay ở vòng lọc đầu trước khi cho AI trả lời (tốn <strong>0 token</strong>).</p>
+      </div>
+
+      <div class="panel" style="border-left:4px solid #2563eb;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h2 style="margin:0;">2. Sửa lỗi hiểu sai câu đồng nghĩa &amp; câu hỏi thật (T20–T30)</h2>
+          <span class="badge b-blue">11 lỗi → 1 lỗi</span>
+        </div>
+        <p><strong>Lượt 1 sai:</strong> Bộ điều phối dùng từ khóa cứng nên 10 câu hỏi kỹ thuật lấy từ diễn đàn và câu diễn đạt khác chữ (T20) bị đẩy nhầm sang Bạn học AI.</p>
+        <p style="margin-top:4px;"><strong>Cách sửa:</strong> Nâng cấp bộ điều phối dùng Haiku 5.5 phân biệt ý định theo nghĩa, và cho Trợ giảng trả lời đúng giới hạn tài liệu kèm mã trích dẫn.</p>
+      </div>
+
+      <div class="panel" style="border-left:4px solid #d97706;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h2 style="margin:0;">3. Ghi nhận trung thực ca còn trượt (T20) &amp; giới hạn kỹ thuật</h2>
+          <span class="badge" style="background:#fef3c7; color:#92400e;">Giữ nguyên T20 = 0</span>
+        </div>
+        <p>Ở Lượt 2, câu <strong>T20</strong> đã được chuyển đúng Trợ giảng nhưng câu hỏi kiểm tra chốt lại lặp trùng đúng ý học viên vừa nói. Ngoài ra, 2 câu hỏi kỹ thuật dài (<strong>T24, T29</strong>) bị cụt chữ cuối do chạm trần 1024 token.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Trình bày: Nguyễn Trọng Hưởng · Run 1: run-1@20261128-091032 · Run 2: run-2@20261128-102437 (commit fb1352b)</span>
+    <span>Trang 3 / 4</span>
+  </div>
+</section>
+
+<!-- =========================================================
+     SLIDE 4: CHI PHÍ, KẾT LUẬN GO & 1 TUẦN TỚI
+========================================================= -->
+<section class="slide">
+  <div class="head">
+    <div>
+      <div class="kicker">4 · Chi phí vận hành (R6), Kết luận &amp; Bước tiếp theo</div>
+      <h1>Chi phí chỉ $2.47/tháng (700 học viên) — Đề xuất GO thí điểm</h1>
+    </div>
+    <div class="meta-right">Mô phỏng 50 phiên thật (seed=42, 0 lỗi)<br/>Nguồn: cost/cost-estimate.md · eval/report.md §4</div>
+  </div>
+
+  <!-- Top 3 Cost Numbers -->
+  <div class="grid-3" style="margin-bottom: 18px;">
+    <div class="panel">
+      <div class="muted" style="font-weight:700;">Chi phí mỗi lượt thành công</div>
+      <div class="num-xl" style="color:#059669; margin:6px 0;">$0.00031</div>
+      <p>Tính trên Haiku 5.5 ($0.00030/phiên ÷ tỷ lệ đạt thật 97%). Có <strong>18/50 phiên</strong> bị chặn ở vòng ngoài nên tốn <strong>0đ</strong>.</p>
+    </div>
+
+    <div class="panel">
+      <div class="muted" style="font-weight:700;">Ngân sách 700 học viên / tháng</div>
+      <div class="num-xl" style="color:#2563eb; margin:6px 0;">$2.47</div>
+      <p>Chỉ khoảng <strong>90 VNĐ / người / tháng</strong>. Kịch bản ít (300 HV): $1.06 · Cao (1.000 HV): $3.53 · Dùng Sonnet: $49.38.</p>
+    </div>
+
+    <div class="panel">
+      <div class="muted" style="font-weight:700;">So với ~1.017 giờ mất mỗi tháng</div>
+      <div class="num-xl" style="color:#0f172a; margin:6px 0;">$0.021 <span style="font-size:18px; font-weight:600; color:#64748b;">/ giờ</span></div>
+      <p>Chỉ cần giúp mỗi học viên tiết kiệm được từ <strong>10 phút/tháng</strong> là hệ thống đã hoàn toàn xứng đáng triển khai.</p>
+    </div>
+  </div>
+
+  <!-- Verdict Banner -->
+  <div class="panel-dark" style="margin-bottom: 18px; display:flex; align-items:center; justify-content:space-between; gap:28px;">
+    <div style="flex:1;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <span class="badge" style="background:#10b981; color:#ffffff; font-size:12.5px; padding:4px 12px;">QUYẾT ĐỊNH: GO — THÍ ĐIỂM NHÓM NHỎ LỚP L3</span>
+        <span style="font-size:12.5px; color:#94a3b8;">Đủ 4/4 điều kiện cứng · Vượt chuẩn §7</span>
+      </div>
+      <p style="color:#f1f5f9; font-size:14.5px;">
+        Hội tụ đủ 3 trụ: <strong>Nỗi đau có thật</strong> (74.3% thiếu ý mới, 1.08% phản hồi AI cũ) · <strong>AI hiệu quả</strong> (60% → 97%, chặn 100% tấn công) · <strong>Chi phí cực thấp</strong> ($2.47/tháng).
+      </p>
+    </div>
+    <div style="min-width:340px; border-left:1px solid #334155; padding-left:24px;">
+      <div style="font-size:12px; font-weight:700; color:#fbbf24; margin-bottom:4px;">RANH GIỚI AN TOÀN GIỮ NGUYÊN</div>
+      <p style="color:#cbd5e1; font-size:13px;">• Không tự chấm điểm chính thức lên LMS<br/>• Giảng viên duyệt trước kho 11 bài học<br/>• Mọi lời giải thích phải gắn mã [DXX-XX]</p>
+    </div>
+  </div>
+
+  <!-- 3 Next Steps -->
+  <div class="grid-3" style="flex:1;">
+    <div class="panel" style="padding:16px 20px;">
+      <span class="badge b-gray" style="margin-bottom:8px;">Nếu có thêm 1 tuần · Việc 1</span>
+      <h2>Khử lặp câu hỏi chốt (T20)</h2>
+      <p class="muted">Khi học viên đã diễn đạt đủ ý bằng từ đồng nghĩa, yêu cầu AI hỏi một câu đào sâu mới thay vì hỏi lại đúng ý học viên vừa nói.</p>
+    </div>
+    <div class="panel" style="padding:16px 20px;">
+      <span class="badge b-gray" style="margin-bottom:8px;">Nếu có thêm 1 tuần · Việc 2</span>
+      <h2>Tránh cụt chữ dài (T24, T29)</h2>
+      <p class="muted">Cô đọng câu trả lời của Trợ giảng còn 3–4 câu hoặc nới trần max_tokens, kèm kiểm tra độ ổn định qua nhiều lần chạy.</p>
+    </div>
+    <div class="panel" style="padding:16px 20px;">
+      <span class="badge b-gray" style="margin-bottom:8px;">Nếu có thêm 1 tuần · Việc 3</span>
+      <h2>Thử trên học viên thật</h2>
+      <p class="muted">Đo khả năng nhớ bài sau phiên trên ≥3 học viên L3 ngoài nhóm (validation/log.md) và hoàn tất đếm kênh Discord khoá.</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Trình bày: Nguyễn Trọng Hưởng · Kho mã nguồn: github.com/trongjhuongwr/K5-Day15-L3A-GTAVIN · Cả 4 thành viên sẵn sàng hỏi đáp</span>
+    <span>Trang 4 / 4</span>
+  </div>
+</section>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let idx = 0;
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    const c = document.getElementById('counter');
+    if (c) c.textContent = `${idx + 1} / ${slides.length}`;
+    if (document.body.classList.contains('present-mode')) {
+      const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      slides[idx].style.transform = `scale(${scale})`;
+    } else {
+      slides.forEach(s => s.style.transform = '');
+    }
+  }
+  function step(d) {
+    idx = Math.max(0, Math.min(slides.length - 1, idx + d));
+    if (!document.body.classList.contains('present-mode')) {
+      slides[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    render();
+  }
+  function toggleMode() {
+    document.body.classList.toggle('present-mode');
+    render();
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); step(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    if (e.key.toLowerCase() === 'p') toggleMode();
+    if (e.key.toLowerCase() === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+      else document.exitFullscreen().catch(()=>{});
+    }
+  });
+  window.addEventListener('resize', () => { if (document.body.classList.contains('present-mode')) render(); });
+  render();
+</script>
+</body>
+</html>
