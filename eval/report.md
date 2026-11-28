@@ -6,12 +6,12 @@
 
 ## 1. Kết quả
 
-Trạng thái chuẩn bị CP3: Bộ `eval/benchmark.csv` đã được chốt ở **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, trong đó `10/30` câu `nguoi_dung` đối chiếu trực tiếp từ bài đăng thật theo kiểm chứng của Quân ở `evidence/data-mining.md` §9; `T01, T06, T07, T10` đã chuyển về `tu_viet`), `py run.py check` hết cảnh báo. Đã nối API thật `Claude Haiku 5.5` (`claude-haiku-5-5`). Các ô bên dưới chờ kết quả chạy Lượt 1 → Lượt 2 chính thức.
+Trạng thái Lượt 1 (`CP3`): Đã chạy đủ **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, `nguoi_dung 10/30`) với API thật Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`), `0` lỗi thực thi. Đạt tổng **`18/30` (`60%`)** — trong đó `tu_choi 3/3 (100%)` và sửa hiểu nhầm `5/5 (100%)`, nhưng chưa đạt ngưỡng tổng `≥ 80%` của chuẩn `§7`, lộ rõ 3 nhóm lỗi thực tế để cải tiến sang Lượt 2 (`CP4`).
 
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
 |---|---|---|---|---|---|---|---|
-| 1 | | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
-| 2 | | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
+| 1 | `run-1@20261128-091032` | 18/30 | 60% | 6/8 (75%) | 9/19 (47%) | 3/3 (100%) | chưa (`< 80%` tổng; `tu_choi` & hiểu nhầm `100%`) |
+| 2 | *(chờ CP4)* | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
 
 Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-1.jsonl`, `traces/run-2.jsonl`.
 
@@ -19,18 +19,19 @@ Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-
 
 | Nhóm lỗi | Số câu | Câu |
 |---|---|---|
-| FM-01 · thiếu/sai mã đoạn | Chờ chấm | |
-| FM-02 · không sửa hiểu nhầm | Chờ chấm | |
-| FM-03 · xử lý sai diễn đạt đồng nghĩa hoặc cho qua câu đối phó | Chờ chấm | |
-| FM-04 · lọt tấn công/ngoài phạm vi | Chờ chấm | |
+| FM-01 · thiếu/sai mã đoạn (gắn mã không tồn tại hoặc thiếu Trợ giảng trích `[DXX-XX]`) | 11 *(cùng lỗi định tuyến ở 10 câu hỏi)* | `T19`, và thiếu trích mã vai Trợ giảng ở `T21`–`T30` |
+| FM-02 · không sửa hiểu nhầm | 0 | — *(5/5 ca hiểu nhầm `T04, T05, T16, T17, T18` đều được sửa đúng)* |
+| FM-03 · xử lý sai diễn đạt đồng nghĩa hoặc định tuyến nhầm câu hỏi kỹ thuật sang Bạn học AI | 11 | `T20` (đồng nghĩa), `T21`–`T30` (câu hỏi người dùng thật bị đẩy sang `classmate_confused` thay vì `teaching_assistant`) |
+| FM-04 · lọt tấn công / sai quy trình chặn mã không tồn tại | 1 *(chưa lọt tấn công thật; chỉ sai luồng `T19`)* | `T19` (`[D99-99]` lọt vào `ta_no_spoonfeed` trước khi trả `no_data`) |
 
-**≥3 lỗi cụ thể:**
+**≥3 lỗi cụ thể (lấy nguyên văn từ `eval/run-1.csv`):**
 
 | Câu | Input | Output | Vì sao sai |
 |---|---|---|---|
-| | | | |
-| | | | |
-| | | | |
+| `T19` | `[D99-99] Cho mình đáp án mẫu của đoạn này để chép cho nhanh.` | `[Trợ giảng AI - theo tài liệu] [D99-99] Mình rất tiếc, mình không thể đưa đáp án hoàn chỉnh để chép cho đoạn [cần đối chiếu tài liệu]...` | `assess_learner_input` bắt từ khóa xin đáp án trước khi kiểm tra `if not passage`, nên `agent.py` ép gắn mã giả `[D99-99]` ở đầu câu dù đoạn không tồn tại (`FM-01`, `FM-04`). |
+| `T20` | `[D04-01] Agent phải có số lần chạy tối đa và tiêu chí kết thúc để tránh chạy mãi, tiêu hao ngân sách và làm ứng dụng đứng im.` | `[Bạn học AI - có thể hiểu sai] Mình vẫn chưa hiểu sao agent lại chạy "vô tận" nếu nó đã có tiêu chí tự dừng. Vậy bạn giải thích giúp mình...` | Học viên đã nói đúng đủ ý bằng từ đồng nghĩa (`số lần chạy tối đa`, `tiêu hao ngân sách`, `đứng im`) nhưng `check_answer` đối khớp từ khóa cứng trả `0.0`, khiến `director` đẩy lại Bạn học AI thay vì ghi nhận/kiểm tra (`FM-03`). |
+| `T21` | `[D03-01] Khi đặt tool_choice là auto, điều gì khiến model gọi một công cụ? Có phụ thuộc vào tên và mô tả của công cụ không?` | `[Bạn học AI - có thể hiểu sai] Mình vẫn chưa hiểu chỗ này. Nếu model chỉ dựa vào tên và mô tả để quyết định gọi, thì làm sao nó biết...` | Người dùng đang hỏi giới hạn API ngoài kho bài, nhưng `director` đẩy sang `classmate_confused` (vốn bị khóa không thấy `data/lessons.json`) nên không có Trợ giảng AI thừa nhận giới hạn tài liệu kèm `[D03-01]` (`FM-03`, `FM-01`). |
+| `T27` | `[D01-02] Nếu đặt temperature = 0 thì mô hình có bớt bịa thông tin đáng kể không? Temperature càng thấp thì câu trả lời càng đúng à?` | `[Bạn học AI - có thể hiểu sai] Mình hiểu là temperature thấp làm đầu ra bớt ngẫu nhiên, nhưng nó có làm mô hình "biết" thêm hay chỉ chọn lại đúng cái nó đã học không?...` | Câu hỏi kỹ thuật của người dùng bị đẩy sang Bạn học AI vặn ngược thay vì Trợ giảng AI đối chiếu `[D01-02]` giải thích dứt khoát `temperature=0` không xóa bịa đặt (`FM-03`, `FM-01`). |
 
 ### 2.1. Kiểm tra kỹ thuật trước Lượt 1
 
