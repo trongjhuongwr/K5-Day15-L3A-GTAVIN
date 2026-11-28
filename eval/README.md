@@ -95,13 +95,10 @@ Khi chấm kết quả, chỉ cập nhật `pass` và `ghi_chu`. Giữ run ID, i
 | Lượt | Run ID | Model | Cấu hình (prompt / công cụ / thay đổi) | Đạt / tổng | % | Đạt chuẩn? |
 |---|---|---|---|---|---|---|
 | 1 | `run-1@20261128-091032` | `claude-haiku-5-5` | Bản baseline rule-based `director` + 5 `@tool` (`tools.py`) + Handoff Allowlist (Day 08) + `_output_guardrail` (Day 11) + hỗ trợ hỏi ngược (`6c843f7`) | `18/30` | `60%` | Chưa (`< 80%` tổng; `tu_choi` `3/3`, hiểu nhầm `5/5`) |
-| 2 | *(chờ CP4)* | | | __/__ | | |
+| 2 | `run-2@20261128-102437` | `claude-haiku-5-5` | Cải tiến Lượt 2 (`fb1352b`): chặn `[DXX-XX]` không tồn tại, `_semantic_director` phân loại 4 ý định + `ta_grounded_qa`, siết `SYSTEM_TA` ≤5 câu | `29/30` | `97%` | **Đạt** (`≥ 80%` tổng, `tu_choi` `3/3`, hiểu nhầm `5/5`) |
 
 ## 6. Lỗi chính
 
-- Lượt 1 (`18/30 = 60%`) ghi nhận 3 nhóm lỗi thật rõ từ output/trace (chi tiết tại `eval/report.md` §2):
-  1. `FM-01, FM-04` ở `T19`: kiểm tra xin đáp án trước khi kiểm tra mã đoạn tồn tại, gắn nhầm `[D99-99]`.
-  2. `FM-03` ở `T20`: câu giải thích đúng bằng từ đồng nghĩa không khớp từ khóa cứng (`check_answer = 0.0`).
-  3. `FM-03, FM-01` ở `T21`–`T30`: `director` rule-based không phân biệt được câu hỏi kỹ thuật của người dùng với câu giảng bài, đẩy toàn bộ sang `classmate_confused` thay vì gọi `teaching_assistant` giải thích giới hạn tài liệu kèm `[mã đoạn]`.
-
-Các ca cần chuyển Hưởng/Tân xử lý được ghi ở `eval/report.md` mục 2.1. Khi có model thật, chạy bộ benchmark đã chốt, giữ kết quả gốc và chấm đủ từng câu.
+- Lượt 1 (`18/30 = 60%`) ghi nhận 3 nhóm lỗi thật (`T19`, `T20`, `T21`–`T30`). Sau cải tiến có mục tiêu ở `fb1352b`, Lượt 2 đạt **`29/30 (97%)`** (chi tiết tại `eval/report.md` §3):
+  - Đã xử lý dứt điểm `T19` (`no_data` báo mã không tồn tại) và `10/10` câu hỏi người dùng thật `T21`–`T30` (`ta_grounded_qa` trích `[DXX-XX]` + thừa nhận giới hạn tài liệu).
+  - Còn lại duy nhất `T20` (`FM-03` câu hỏi chốt lặp lại đúng rủi ro học viên vừa nêu) và lỗi cụt chữ cuối ở `T24`, `T29` do chạm `max_tokens=1024` (ghi nhận tại `eval/report.md` §4).

@@ -6,12 +6,12 @@
 
 ## 1. Kết quả
 
-Trạng thái Lượt 1 (`CP3`): Đã chạy đủ **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, `nguoi_dung 10/30`) với API thật Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`), `0` lỗi thực thi. Đạt tổng **`18/30` (`60%`)** — trong đó `tu_choi 3/3 (100%)` và sửa hiểu nhầm `5/5 (100%)`, nhưng chưa đạt ngưỡng tổng `≥ 80%` của chuẩn `§7`, lộ rõ 3 nhóm lỗi thực tế để cải tiến sang Lượt 2 (`CP4`).
+Trạng thái Lượt 1 → Lượt 2 (`CP4`): Đã chạy đủ **`30` câu** (`thuong 8 · kho 19 · tu_choi 3`, `nguoi_dung 10/30`) với API thật Anthropic **Claude Haiku 5.5** (`claude-haiku-5-5`), `0` lỗi thực thi ở cả hai lượt. Sau 1 đợt cải tiến có mục tiêu ở `fb1352b`, tỷ lệ đạt tăng từ **`18/30 (60%)`** → **`29/30 (97%)`** (**đạt chuẩn `spec.md §7`**: tổng ≥ 80%, `tu_choi` `3/3 = 100%`, sửa hiểu nhầm `5/5 = 100%`).
 
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
 |---|---|---|---|---|---|---|---|
 | 1 | `run-1@20261128-091032` | 18/30 | 60% | 6/8 (75%) | 9/19 (47%) | 3/3 (100%) | chưa (`< 80%` tổng; `tu_choi` & hiểu nhầm `100%`) |
-| 2 | *(chờ CP4)* | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
+| 2 | `run-2@20261128-102437` | 29/30 | 97% | 8/8 (100%) | 18/19 (95%) | 3/3 (100%) | **đạt** (`≥ 80%` tổng, `100%` `tu_choi`, `100%` hiểu nhầm) |
 
 Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-1.jsonl`, `traces/run-2.jsonl`.
 
@@ -49,14 +49,18 @@ Sau khi thêm nguồn diễn đàn, đã kiểm đủ 25 câu với `fake`, tấ
 
 ## 3. Một lần cải tiến
 
-Các thay đổi của Hưởng/Tân đã có trước Lượt 1. Khi báo cáo cải tiến giữa hai lượt, ghi riêng thay đổi thực hiện sau khi có kết quả Lượt 1 cùng commit tương ứng.
+Thực hiện tại commit `fb1352b` (chỉ sửa `codebase/agent.py` sau khi có kết quả và trace của Lượt 1 `run-1@20261128-091032`; giữ nguyên bộ 30 câu và chuẩn "đạt" `§7`).
 
-- Nhắm vào nhóm lỗi: __ — vì sao là nhóm **đau nhất với người dùng**: __
-- Đã sửa gì (có thể vài thay đổi cùng nhắm nhóm lỗi đó): __
-- Kết quả: nhóm lỗi đó __/__ → __/__ · tổng __% → __%
-- Câu nào **tệ đi** sau khi sửa: __
+- Nhắm vào nhóm lỗi: **`FM-03` + `FM-01`** (định tuyến nhầm câu hỏi kỹ thuật & từ đồng nghĩa `T20`–`T30`, cùng mã không tồn tại `T19`) — vì sao là nhóm **đau nhất với người dùng**: người học hỏi thắc mắc thật hoặc giải thích đúng bằng cách nói riêng lại bị Bạn học AI hỏi vặn ngược hoặc gắn mã `[D99-99]` sai nguồn thay vì được Trợ giảng trả lời bám tài liệu và thừa nhận giới hạn kho bài.
+- Đã sửa gì (trong `codebase/agent.py`, commit `fb1352b`):
+  1. Chặn trước mã đoạn không tồn tại (`explicit_code and not passage` → `no_data` nói rõ mã không tồn tại, khắc phục `T19`).
+  2. Thêm `_semantic_director` dùng `Claude Haiku 5.5` phân loại 4 ý định (`partial_explanation`, `paraphrased_pass`, `grounded_qa`, `misconception`) cho ca chưa khớp từ khóa cứng, kèm nhánh `ta_grounded_qa` trả lời câu hỏi kỹ thuật đúng `[mã đoạn]` và thừa nhận phần chưa có trong tài liệu (`T21`–`T30`).
+  3. Siết `SYSTEM_TA` tối đa 5 câu ngắn gọn để giảm chi phí token và hạn chế cắt chữ.
+- Kết quả: nhóm `FM-03/FM-01` **12/12 lỗi → 1/12 còn lại** (còn `T20` do câu hỏi chốt lặp ý) · tổng **`18/30 (60%)` → `29/30 (97%)`** (`T01` vẫn giữ được hành vi Bạn học AI hỏi vặn).
+- Câu nào **tệ đi** sau khi sửa: **Không có** (`0/18` câu đạt ở Lượt 1 bị trượt ở Lượt 2).
 
 ## 4. Còn lại
 
-- Các ca ở mục 2.1 đang chờ nhóm xử lý hoặc xác minh bằng model thật. Mã bài sai và ngữ cảnh bị gắn nhầm có thể làm người học nhận hướng dẫn thiếu căn cứ.
-- Nếu có thêm 1 tuần, đề xuất kiểm nhận diện diễn đạt đồng nghĩa, đánh giá phiên học nhiều lượt từ giảng lại đến trả lời câu kiểm tra, và thử với người dùng ngoài nhóm. Thứ tự ưu tiên sẽ cập nhật theo Lượt 1–2 và `validation/log.md`.
+- **`T20` vẫn trượt theo tiêu chí nghiêm ngặt (`FM-03`):** `_semantic_director` đã nhận ra học viên nói đồng nghĩa và chuyển đúng sang Trợ giảng `[D04-01]`, nhưng câu hỏi cuối mặc định của đoạn vẫn hỏi lại đúng hai rủi ro học viên vừa nêu (*"chạy mãi, tốn ngân sách, đứng im"*). Cách xử lý tiếp: yêu cầu TA tự sinh câu hỏi đào sâu mới (vd về điều kiện dừng hoặc chọn ngưỡng `MAX_STEPS`) khi `missing == []`.
+- **Cắt câu ở ngưỡng `max_tokens=1024` trên 2 câu dài (`T24`, `T29`):** Nội dung cốt lõi và thừa nhận giới hạn tài liệu đã đầy đủ trước chỗ cắt nhưng câu kết thúc chưa trọn vẹn (xem `eval/run-2.csv`); cần siết độ dài trong `ta_grounded_qa` hoặc nâng nhẹ `max_tokens` trong `ai.py`.
+- **Nếu có thêm 1 tuần:** kiểm thử độ ổn định lặp (`pass^3`) trên các câu hỏi ngoài phạm vi có gắn mã đoạn, bổ sung cơ chế trích dẫn ngược từng câu từ `lessons.json`, và tổng hợp phản hồi thử nghiệm người dùng ngoài nhóm trong `validation/log.md`.
